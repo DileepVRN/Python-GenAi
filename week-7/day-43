@@ -1,0 +1,136 @@
+Perfect! Day 43 is about LLM basics, graphs (DSA fundamentals), and production-level prompt logging. Let’s break this down Goldman Sachs (GS)-level, covering concepts, real-time usage, Python examples, scenario-based reasoning, and production best practices.
+
+📌 DAY 43 — LLM Basics + Graphs + Prompt Logs
+1️⃣ LLM (Large Language Model) Basics — Core Concepts
+🔹 Core Idea:
+LLMs like GPT, LLaMA, or Falcon are transformer-based models trained on massive text corpora.
+In production trading or fintech, LLMs are used for:
+Market news summarization
+Sentiment analysis
+Generating trade insights
+Customer support automation
+🔹 GS-Level Focus:
+Architecture
+Transformer → Attention mechanism → Contextual embeddings
+Input token sequence → Self-attention → Output token sequence
+Prompting
+Structured prompts improve accuracy and reliability
+Include constraints, examples, or expected output format
+Inference
+Can be real-time (e.g., summarizing breaking news) or batch (e.g., daily report generation)
+Evaluation
+Check outputs for factual accuracy, consistency, and business relevance
+Real-Time Production Use
+Stream financial news → LLM → Extract events/market sentiment → Push alerts
+🔹 Python Example — LLM Prompt
+from transformers import pipeline
+
+# Load a small GPT-like summarization model
+summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+
+market_news = """
+Tech stocks surged today after earnings reports exceeded expectations.
+Investors are optimistic about upcoming product launches.
+"""
+
+summary = summarizer(market_news, max_length=50, min_length=20, do_sample=False)
+print("LLM Summary:", summary[0]['summary_text'])
+
+GS-Level Reasoning:
+
+Summarization → extracts actionable insights from raw data
+Output can feed trading decisions or alerts
+Structured prompts reduce hallucinations or noise
+2️⃣ Graphs (DSA Basics) — Core Concepts
+🔹 Why Graphs Matter in Finance
+Trading networks, portfolio correlations, and fraud detection often use graph structures:
+Nodes → Traders, accounts, instruments
+Edges → Transactions, correlations, dependencies
+Algorithms:
+BFS / DFS → Explore market or fraud network
+Shortest path → Optimal transaction route
+Cycle detection → Fraud loop detection
+🔹 Python Example — Basic Graph Representation
+graph = {
+    'AAPL': ['MSFT', 'GOOG'],
+    'MSFT': ['AAPL', 'TSLA'],
+    'GOOG': ['AAPL'],
+    'TSLA': ['MSFT']
+}
+
+# BFS traversal
+from collections import deque
+
+def bfs(graph, start):
+    visited = set()
+    queue = deque([start])
+    order = []
+
+    while queue:
+        node = queue.popleft()
+        if node not in visited:
+            visited.add(node)
+            order.append(node)
+            queue.extend(graph.get(node, []))
+    return order
+
+print("BFS Order:", bfs(graph, 'AAPL'))
+
+GS-Level Insight:
+
+Graphs model interconnected systems in trading, fraud detection, and market correlations
+BFS/DFS → Explore networks efficiently
+3️⃣ Production — Prompt Logs
+🔹 Key Considerations:
+Logging Prompts & Outputs
+Track prompt text, model version, timestamp, user/system ID
+Include LLM response, confidence or token usage
+Structured Logging
+JSON format → easy aggregation, monitoring, and auditing
+Monitoring
+Detect abnormal outputs, high latency, or prompt misuse
+Compliance
+Store prompts for audit trails, especially in finance
+Rate Limiting & Scaling
+Protect LLM API from overload; cache repeated prompts when possible
+🔹 Python Example — Prompt Logging
+import logging
+import time
+import json
+
+# Configure logging
+logging.basicConfig(filename="prompt_logs.json", level=logging.INFO)
+
+def log_prompt(prompt, response, model_version="v1"):
+    log_entry = {
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "model_version": model_version,
+        "prompt": prompt,
+        "response": response
+    }
+    logging.info(json.dumps(log_entry))
+
+# Example usage
+prompt = "Summarize today's tech stock news."
+response = "Tech stocks surged after earnings reports exceeded expectations."
+log_prompt(prompt, response)
+
+GS-Level Reasoning:
+
+Enables auditability, debugging, and monitoring
+Helps evaluate model performance over time
+4️⃣ Scenario-Based Questions — GS-Level
+Scenario	How to Answer
+“LLM generates hallucinated market news”	Use structured prompts, constrain responses, implement output validation, and log suspicious outputs.
+“Prompt logs growing too large”	Store logs in compressed JSON, use centralized logging systems, implement retention policies.
+“Graph shows suspicious transaction loop”	Use cycle detection and BFS/DFS to identify and alert potential fraud.
+“Integrate LLM outputs into trading pipeline”	LLM → parse key signals → Kafka/queue → trading/risk engine → logs + alerting
+“Real-time prompt failures”	Implement retries, fallback defaults, monitor API latency, and log failures for auditing.
+5️⃣ GS-Level Key Takeaways
+LLMs → Extract insights from unstructured data for trading/finance applications
+Graphs → Model relationships, detect fraud, analyze networks
+Prompt Logging → Essential for audit, monitoring, and compliance
+Scenario-Based Thinking → Focus on failures, hallucinations, throughput, and integration with pipelines
+Python Implementation → Shows clear understanding of data structures, streaming, and production-grade logging
+
+I can also create a GS-Level diagram showing “LLM → Prompt Processing → Graph Analysis → Alert System → Logs”, exactly like they expect in interviews for production AI systems.

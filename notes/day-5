@@ -1,0 +1,1257 @@
+Perfect — Day 5 is where you become a real backend engineer 🔥
+Today we move from functions → OOP + service design + real trading system (Order Service)
+
+
+Perfect—let’s go deep (GS-level) on your Day 5 topics:
+Python Lists → Remove Duplicates → Exception Handling, with production thinking + interview depth 🔥
+
+🧠 1) PYTHON LISTS — IN-DEPTH
+🔹 What is a List (Internals)
+
+👉 Python list = dynamic array
+
+[10, 20, 30]
+
+Behind the scenes:
+
+contiguous memory
+auto-resizing
+stores references (not raw values)
+🔥 Memory Behavior (Important)
+
+When list grows:
+
+size → capacity → resize → copy
+
+👉 That’s why:
+
+append() → amortized O(1)
+sometimes expensive (resize)
+🔹 Mutability (VERY IMPORTANT)
+a = [1, 2, 3]
+b = a
+
+b.append(4)
+
+print(a)  # [1, 2, 3, 4]
+
+👉 Same object reference
+
+🔥 GS Insight
+
+Lists are mutable, so always be careful with shared references.
+
+🔹 Shallow vs Deep Copy
+❌ Shallow Copy
+a = [[1, 2], [3, 4]]
+b = a.copy()
+
+b[0][0] = 100
+
+print(a)  # changed!
+✅ Deep Copy
+import copy
+
+b = copy.deepcopy(a)
+
+👉 GS expectation:
+
+Understand nested object mutation
+
+🔹 Time Complexity (Must Know)
+Operation	Complexity
+append	O(1)
+pop	O(1)
+insert(0)	O(n)
+delete	O(n)
+search	O(n)
+🔥 Interview Insight
+
+👉 Avoid:
+
+arr.insert(0, x)
+
+✔ because O(n)
+
+🔹 Iteration Patterns
+❌ Bad
+for i in range(len(arr)):
+    print(arr[i])
+✅ Better
+for val in arr:
+    print(val)
+✅ With index
+for i, val in enumerate(arr):
+🧠 2) REMOVE DUPLICATES — IN DEPTH
+🎯 Problem Types
+🔥 Case 1: Unsorted List
+✅ Optimal (Set-based)
+def remove_duplicates(arr):
+    return list(set(arr))
+⚠️ Problem
+
+👉 Order is lost
+
+🔥 Case 2: Preserve Order (IMPORTANT)
+✅ GS-Level Solution
+def remove_duplicates(arr):
+    seen = set()
+    result = []
+
+    for num in arr:
+        if num not in seen:
+            seen.add(num)
+            result.append(num)
+
+    return result
+🧠 Why this is best?
+O(n) time
+preserves order
+scalable
+🔥 Case 3: Sorted Array (IN-PLACE)
+✅ Two-pointer approach
+def remove_duplicates_sorted(arr):
+    if not arr:
+        return 0
+
+    i = 0
+
+    for j in range(1, len(arr)):
+        if arr[j] != arr[i]:
+            i += 1
+            arr[i] = arr[j]
+
+    return i + 1
+
+👉 Used in:
+
+real-time systems
+memory-sensitive systems
+🔥 GS FOLLOW-UP QUESTIONS
+Q1: What if data is huge (GBs)?
+
+✔ streaming
+✔ chunk processing
+
+Q2: Distributed system?
+
+✔ MapReduce
+✔ hash partitioning
+
+⚙️ 3) EXCEPTION HANDLING — IN DEPTH
+🔹 Why Exception Handling?
+
+👉 Prevent crashes
+👉 Maintain system stability
+
+🔥 BASIC STRUCTURE
+try:
+    risky_operation()
+except ValueError:
+    handle_error()
+🔥 MULTIPLE EXCEPTIONS
+try:
+    ...
+except (ValueError, TypeError):
+    ...
+🔥 FINALLY BLOCK
+try:
+    ...
+finally:
+    print("Always runs")
+
+👉 Used for:
+
+closing DB connections
+releasing resources
+🔥 CUSTOM EXCEPTION (GS LEVEL)
+class TradeError(Exception):
+    pass
+if amount <= 0:
+    raise TradeError("Invalid amount")
+🔥 PRODUCTION BEST PRACTICES
+❌ Bad
+except:
+    pass
+✅ Good
+except Exception as e:
+    logger.error(f"Error: {e}")
+🔥 LOGGING + EXCEPTIONS
+import logging
+
+logger = logging.getLogger(__name__)
+
+try:
+    process_trade()
+except Exception as e:
+    logger.error("Trade failed", exc_info=True)
+
+👉 exc_info=True → stack trace
+
+🔥 FAIL FAST vs FAIL SAFE
+Strategy	Use
+Fail-fast	dev/debug
+Fail-safe	production
+
+👉 Trading systems:
+✔ prefer fail-safe (reject trade)
+
+🔥 RETRY PATTERN (IMPORTANT)
+import time
+
+def retry(fn):
+    for i in range(3):
+        try:
+            return fn()
+        except Exception:
+            time.sleep(2 ** i)
+    raise
+🧠 REAL PRODUCTION SCENARIO
+❗ Problem
+Kafka consumer crashes randomly
+🔍 Debug
+check logs
+identify exception
+reproduce
+fix
+✅ Fix
+try:
+    process_message(msg)
+except Exception:
+    send_to_dlq(msg)
+🧠 GS INTERVIEW EXPECTATION
+
+You should say:
+
+👉
+“Python lists are dynamic arrays with amortized O(1) append operations, but insertions at the beginning are O(n).
+For duplicate removal, I choose the approach based on constraints—using a set for O(n) time, or a two-pointer approach for sorted arrays.
+For exception handling, I follow structured error handling with logging, avoid silent failures, and use retries and fallback mechanisms in production systems.”
+
+🏁 DAY 5 — FINAL CHECKLIST
+🐍 Python Lists
+
+✅ memory model
+✅ mutability
+✅ complexity
+
+🧠 DSA
+
+✅ remove duplicates (3 types)
+✅ two-pointer
+
+⚙️ Production
+
+✅ exception handling
+✅ logging
+✅ retry
+✅ debugging
+
+🚀 NEXT STEP
+
+If you’re ready:
+
+🧠 ROUND 1 — PYTHON LISTS (DEEP UNDERSTANDING)
+Q1
+
+Why is list.append() amortized O(1) but insert(0, x) is O(n)? Explain the memory model.
+
+👉 A strong answer should mention:
+
+dynamic array, capacity vs size
+resize + copy cost
+shifting elements for index 0 insert
+amortization intuition
+Q2
+
+Given a list shared across functions, how do you prevent accidental mutation?
+
+👉 Cover:
+
+shallow vs deep copy
+defensive copying
+immutability patterns
+Q3 (tricky)
+
+What’s wrong with this? How would you fix it?
+
+def add_item(items=[]):
+    items.append(1)
+    return items
+
+👉 Expect:
+
+mutable default argument pitfall
+fix with None sentinel
+🧠 ROUND 2 — REMOVE DUPLICATES (SYSTEM THINKING)
+Q4
+
+Remove duplicates from a list while preserving order in O(n).
+
+👉 Code + explain:
+
+seen set
+why O(1) lookup
+memory trade-off
+Q5 (follow-up)
+
+What if the list is too large to fit in memory (GBs of data)?
+
+👉 Expected:
+
+streaming/chunking
+external storage (files/DB)
+approximate methods (Bloom filter) if allowed
+Q6 (sorted variant)
+
+Given a sorted list, remove duplicates in-place. Why is this better in some systems?
+
+👉 Expect:
+
+two-pointer
+O(1) extra space
+cache friendliness / memory constraints
+⚙️ ROUND 3 — EXCEPTION HANDLING (PRODUCTION)
+Q7
+
+Design error handling for a function that calls an external service (e.g., pricing API).
+
+👉 Cover:
+
+try/except
+retries with backoff
+timeouts
+fallback/default
+logging (with context)
+Q8 (critical)
+
+Why is except: pass dangerous? When would you ever use a bare except?
+
+👉 Expect:
+
+swallowing errors
+hiding bugs
+only for cleanup + rethrow (rare)
+Q9
+
+How do you design custom exceptions for a trading system?
+
+👉 Expect:
+
+domain-specific exceptions (e.g., RiskError, ValidationError)
+clear hierarchy
+don’t overuse
+🧪 ROUND 4 — DEBUGGING SCENARIOS
+Q10
+
+You see duplicate trades executed. Walk me through your debugging steps.
+
+👉 Strong flow:
+
+confirm symptom (logs/metrics)
+trace request (API → Kafka → services)
+check retries / consumer reprocessing
+verify idempotency store
+fix root cause
+Q11
+
+Production crash: memory spikes when processing a large list. What do you do?
+
+👉 Expect:
+
+reproduce locally
+profile memory
+switch to streaming / generators
+avoid copying large lists
+⚡ ROUND 5 — CODE QUALITY (REFINEMENT)
+Q12
+
+Refactor this to production quality:
+
+def process(arr):
+    res = []
+    for i in arr:
+        if i not in res:
+            res.append(i)
+    return res
+
+👉 Expected:
+
+use set for O(1) lookup
+handle None/edge cases
+naming + clarity
+Q13 (edge case)
+
+How would you remove duplicates when items are unhashable (e.g., dicts)?
+
+👉 Expect:
+
+serialize (tuple/frozenset/json)
+define a key function
+custom equality
+🎯 HOW TO ANSWER (GS STYLE)
+
+When you respond, structure like:
+
+Clarify constraints (size, order, memory)
+Propose solution
+Analyze complexity
+Mention trade-offs
+Add production considerations
+📅 DAY 5 — OOP + ORDER SERVICE (PRODUCTION LEVEL)
+🧠 1. OOP CONCEPTS (SENIOR-LEVEL UNDERSTANDING)
+🔹 What is OOP (Real Meaning)
+
+👉 Not just classes — it’s about modeling real systems
+
+Object = Real-world entity
+Class = Blueprint
+🔥 Example (Trading System)
+Trade, Order, RiskEngine, StrategyEngine
+🧠 2. CORE OOP PRINCIPLES
+🔥 1. Encapsulation (VERY IMPORTANT)
+
+👉 Hide internal logic
+
+class Trade:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def is_valid(self):
+        return self.amount > 0
+🔥 2. Abstraction
+
+👉 Show only what is needed
+
+class RiskEngine:
+    def evaluate(self, trade):
+        pass
+🔥 3. Inheritance (USE CAREFULLY)
+class BaseRule:
+    def check(self):
+        pass
+🔥 4. Polymorphism
+
+👉 Same interface, different behavior
+
+class MaxAmountRule:
+    def check(self, trade):
+        return trade.amount < 50000
+🧠 3. DESIGN PATTERNS (IMPORTANT FOR GS)
+🔥 Strategy Pattern (VERY IMPORTANT)
+
+👉 Used for rule engine
+
+Different rules → same interface
+🏗️ 4. BUILD ORDER SERVICE (🔥 REAL SYSTEM)
+🎯 What is Order Service?
+
+👉 Executes trade after risk approval
+
+🧠 Flow:
+Strategy → Risk → Order Service → Execute
+🏗️ IMPLEMENTATION (PRODUCTION STYLE)
+🔹 Step 1: Trade Model
+class Trade:
+    def __init__(self, trade_id, amount):
+        self.trade_id = trade_id
+        self.amount = amount
+🔹 Step 2: Risk Engine (Reuse)
+class RiskEngine:
+    MAX_LIMIT = 50000
+
+    def evaluate(self, trade: Trade) -> bool:
+        if trade.amount <= 0:
+            return False
+        if trade.amount > self.MAX_LIMIT:
+            return False
+        return True
+🔹 Step 3: Order Service
+import logging
+
+logger = logging.getLogger(__name__)
+
+class OrderService:
+
+    def place_order(self, trade: Trade, risk_engine: RiskEngine):
+        logger.info(f"Processing trade {trade.trade_id}")
+
+        if not risk_engine.evaluate(trade):
+            logger.warning(f"Trade rejected: {trade.trade_id}")
+            return "REJECTED"
+
+        # simulate execution
+        logger.info(f"Trade executed: {trade.trade_id}")
+        return "EXECUTED"
+🔹 Step 4: Run System
+trade = Trade("T1", 10000)
+risk_engine = RiskEngine()
+order_service = OrderService()
+
+print(order_service.place_order(trade, risk_engine))
+🧠 5. WHAT YOU JUST BUILT
+
+👉 Real microservice logic:
+
+Trade → RiskEngine → OrderService → Execution
+⚙️ 6. PRODUCTION THINKING
+🔥 Logging
+
+✔ Every step logged
+
+🔥 Dependency Injection
+order_service.place_order(trade, risk_engine)
+
+👉 Loose coupling
+
+🔥 Testability
+
+✔ Each class can be tested independently
+
+🧠 7. GS INTERVIEW QUESTIONS (DAY 5)
+🔥 Q1
+
+Why use OOP instead of functions?
+
+✔ Better structure
+✔ Real-world modeling
+
+🔥 Q2
+
+What is encapsulation?
+
+✔ Hiding internal logic
+
+🔥 Q3
+
+What is polymorphism?
+
+✔ Same method, different behavior
+
+🔥 Q4
+
+How do you design scalable systems?
+
+✔ modular classes + services
+
+🔥 Q5
+
+How do you test this system?
+
+✔ unit test each class
+
+🧠 8. SCENARIO QUESTIONS
+🔥 SCENARIO 1
+
+👉 Add new rule (e.g., country restriction)
+
+✔ Answer:
+
+create new rule class
+plug into engine
+🔥 SCENARIO 2
+
+👉 What if execution fails?
+
+✔ Answer:
+
+retry
+logging
+fallback
+🔥 SCENARIO 3
+
+👉 How to scale order service?
+
+✔ Answer:
+
+stateless service
+horizontal scaling
+Kafka
+🏁 DAY 5 CHECKLIST
+🐍 Python
+
+✅ Classes
+✅ Objects
+✅ Methods
+
+🧠 OOP
+
+✅ Encapsulation
+✅ Polymorphism
+✅ Abstraction
+
+🏗️ System
+
+✅ Order service built
+✅ Risk + order integration
+
+⚙️ Production
+
+✅ Logging
+✅ Clean design
+
+🚀 NEXT STEP
+
+👉 Practice:
+
+add new rule class
+extend order service
+
+Then say:
+
+Excellent—this is GS-level depth: OOP design + real system design + event-driven trading with Kafka.
+I’ll structure it exactly like an interview.
+
+🧠 1) GS-LEVEL OOP DESIGN QUESTIONS
+🔥 Q1: Design a Pluggable Risk Rule System
+Problem
+
+You must support multiple, changeable rules without modifying core code.
+
+✅ Expected Design (Strategy Pattern)
+from abc import ABC, abstractmethod
+
+class Rule(ABC):
+    @abstractmethod
+    def check(self, trade) -> bool:
+        pass
+
+
+class MaxAmountRule(Rule):
+    def __init__(self, limit):
+        self.limit = limit
+
+    def check(self, trade):
+        return trade.amount <= self.limit
+
+
+class CountryRule(Rule):
+    def __init__(self, restricted):
+        self.restricted = restricted
+
+    def check(self, trade):
+        return trade.country not in self.restricted
+Engine
+class RiskEngine:
+    def __init__(self, rules):
+        self.rules = rules
+
+    def evaluate(self, trade):
+        for rule in self.rules:
+            if not rule.check(trade):
+                return False
+        return True
+🎯 What GS is testing
+Polymorphism
+Extensibility
+Clean interfaces
+🔥 Q2: Design Order Lifecycle System
+Problem
+
+Orders go through states:
+
+CREATED → VALIDATED → EXECUTED → FAILED
+✅ Expected Design (State Pattern)
+class Order:
+    def __init__(self):
+        self.state = "CREATED"
+
+    def validate(self):
+        if self.state != "CREATED":
+            raise Exception("Invalid transition")
+        self.state = "VALIDATED"
+
+    def execute(self):
+        if self.state != "VALIDATED":
+            raise Exception("Invalid transition")
+        self.state = "EXECUTED"
+
+👉 Bonus:
+
+Add retry state
+Add FAILED state
+🔥 Q3: Design Extensible Strategy Engine
+Problem
+
+Multiple trading strategies (mean reversion, momentum)
+
+Expected Design
+class Strategy(ABC):
+    @abstractmethod
+    def generate_signal(self, prices):
+        pass
+
+
+class MomentumStrategy(Strategy):
+    def generate_signal(self, prices):
+        return "BUY" if prices[-1] > prices[-2] else "SELL"
+
+👉 Plug dynamically
+
+🏗️ 2) REAL SYSTEM DESIGN PROBLEMS (GS STYLE)
+🔥 Problem 1: Real-Time Trading System
+Requirements
+Process market data
+Generate signals
+Evaluate risk
+Execute orders
+✅ High-Level Design
+Market Data → Strategy → Risk → Order → Execution
+🔥 Problem 2: Handle 1M trades/sec
+Expected Answer
+
+✔ Use:
+
+horizontal scaling
+partitioning
+async processing
+🔥 Problem 3: Prevent duplicate trades
+Expected Answer
+
+✔ Use:
+
+idempotency key
+unique trade ID
+database constraint
+🔥 Problem 4: Low Latency System
+Expected Answer
+
+✔ Use:
+
+in-memory cache
+avoid DB calls
+precomputed rules
+⚡ 3) FULL TRADING ARCHITECTURE (KAFKA)
+🧠 Core Technology
+
+👉 Apache Kafka
+
+🏗️ ARCHITECTURE
+Producer (Market Data)
+        ↓
+Kafka Topic: market-data
+        ↓
+Strategy Service
+        ↓
+Kafka Topic: signals
+        ↓
+Risk Service
+        ↓
+Kafka Topic: approved-trades
+        ↓
+Order Service
+        ↓
+Execution
+⚙️ COMPONENT BREAKDOWN
+🔹 1. Market Data Producer
+Sends price updates to Kafka
+🔹 2. Strategy Service
+Consumes market data
+Produces BUY/SELL signals
+🔹 3. Risk Service
+Validates trade
+Rejects unsafe trades
+🔹 4. Order Service
+Executes approved trades
+🔥 KAFKA FLOW (IMPORTANT)
+market-data → signals → approved-trades → execution
+
+👉 Each service:
+
+independent
+scalable
+decoupled
+⚡ 4) WHY KAFKA?
+
+✔ High throughput
+✔ Fault tolerant
+✔ Replay capability
+✔ Decoupled architecture
+
+⚙️ 5) REAL PRODUCTION CONCEPTS
+🔥 1. Partitioning
+
+👉 Scale consumers
+
+🔥 2. Consumer Groups
+
+👉 Parallel processing
+
+🔥 3. Offset Management
+
+👉 Track processed messages
+
+🔐 6) FAULT TOLERANCE IN KAFKA
+
+✔ Retry
+✔ Dead Letter Queue (DLQ)
+✔ Exactly-once processing
+
+🧠 7) GS-LEVEL FOLLOW-UP QUESTIONS
+🔥 Q1: What if Kafka goes down?
+
+✔ fallback queue
+✔ retry
+✔ fail-safe
+
+🔥 Q2: How to ensure no data loss?
+
+✔ replication
+✔ acks=all
+
+🔥 Q3: How to debug?
+
+✔ logs
+✔ tracing
+✔ metrics
+
+🔥 Q4: How to scale?
+
+✔ increase partitions
+✔ add consumers
+
+🧠 8) FINAL GS-LEVEL ANSWER (WHAT YOU SAY)
+
+👉
+“I would design the system using an event-driven architecture with Kafka as the backbone.
+Each service—strategy, risk, and order—would act as independent consumers and producers, allowing horizontal scalability and fault isolation.
+Using OOP principles, I would design pluggable strategies and rules using polymorphism.
+For reliability, I would implement retries, DLQs, and idempotent processing, ensuring no duplicate or lost trades.”
+
+🏁 YOUR TASK
+🔥 Coding
+Implement Rule class system
+Add Strategy class
+Integrate with OrderService
+🧠 Thinking
+Where to use Kafka?
+How to scale each service?
+How to handle failure?
+
+) OBJECT-ORIENTED PROGRAMMING (OOP)
+🔹 Real Meaning
+
+👉 OOP is about modeling real-world systems
+
+Trade → object
+RiskEngine → object
+OrderService → object
+🔥 Key Idea
+Code = System design
+🧠 2) CLASS vs OBJECT
+Concept	Meaning
+Class	Blueprint
+Object	Instance of class
+class Trade:
+    pass
+
+t = Trade()
+
+👉 Interview expectation:
+Explain why class exists, not just how
+
+🧠 3) ENCAPSULATION (VERY IMPORTANT)
+🔹 Concept
+
+👉 Hide internal details, expose only behavior
+
+class Trade:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def is_valid(self):
+        return self.amount > 0
+
+👉 Why?
+
+Protect data
+Maintain control
+🧠 4) ABSTRACTION
+🔹 Concept
+
+👉 Show what, hide how
+
+class RiskEngine:
+    def evaluate(self, trade):
+        pass
+
+👉 User doesn’t care about internal logic
+
+🧠 5) POLYMORPHISM (VERY IMPORTANT)
+🔹 Concept
+
+👉 Same interface, different behavior
+
+class Rule:
+    def check(self, trade):
+        pass
+class MaxAmountRule(Rule):
+    def check(self, trade):
+        return trade.amount < 50000
+
+👉 Key for:
+
+rule engines
+strategy systems
+🧠 6) INHERITANCE (USE CAREFULLY)
+🔹 Concept
+
+👉 Reuse behavior
+
+class BaseRule:
+    def check(self):
+        pass
+
+👉 Warning:
+
+Overuse → tight coupling
+🧠 7) DESIGN PATTERNS (DAY 5 CRITICAL)
+🔥 1. Strategy Pattern
+Concept
+Different logic → same interface
+Use cases
+Trading strategies
+Risk rules
+🔥 2. State Pattern
+Concept
+Object changes behavior based on state
+Example
+Order: CREATED → EXECUTED → FAILED
+🔥 3. Dependency Injection
+Concept
+
+👉 Pass dependencies instead of creating them
+
+order_service.place_order(trade, risk_engine)
+
+👉 Why?
+
+loose coupling
+testability
+🧠 8) CLASS DESIGN PRINCIPLES
+🔥 Single Responsibility
+One class → one responsibility
+🔥 Open/Closed Principle
+Open for extension, closed for modification
+
+👉 Add new rule → don’t change existing code
+
+🧠 9) SERVICE DESIGN THINKING
+🔹 System Flow
+Market → Strategy → Risk → Order → Execution
+
+👉 Each service:
+
+independent
+testable
+scalable
+🧠 10) ORDER SERVICE CONCEPT
+🔹 Responsibility
+
+👉 Execute trade after validation
+
+🔹 Behavior
+receive trade
+call risk engine
+execute if approved
+🧠 11) COUPLING vs COHESION
+🔹 Low Coupling
+
+👉 Classes should not depend heavily on each other
+
+🔹 High Cohesion
+
+👉 Class should do one focused job
+
+🧠 12) TESTABILITY
+
+👉 You should be able to test:
+
+Trade class
+RiskEngine
+OrderService
+
+independently
+
+⚙️ 13) PRODUCTION CONCEPTS
+🔥 Logging in classes
+logger.info("Order executed")
+🔥 Error handling
+validate inputs
+handle exceptions
+🔥 Idempotency
+
+👉 Same request → same result
+
+🧠 14) REAL SYSTEM MAPPING
+Trade (data)
+↓
+Strategy (decision)
+↓
+RiskEngine (validation)
+↓
+OrderService (execution)
+
+👉 This is actual trading system architecture
+
+🎯 GS INTERVIEW EXPECTATIONS
+
+You should explain:
+
+✔ Why OOP over functions
+✔ How to design extensible systems
+✔ How to add new rules without breaking code
+✔ How to scale services
+
+🏁 DAY 5 CONCEPT CHECKLIST
+🐍 Python
+
+✅ Classes
+✅ Objects
+✅ Methods
+
+🧠 OOP
+
+✅ Encapsulation
+✅ Polymorphism
+✅ Abstraction
+
+🏗️ Design
+
+✅ Strategy pattern
+✅ State pattern
+✅ Dependency injection
+
+⚙️ Production
+
+✅ Logging
+✅ Error handling
+✅ Idempotency
+
+🚀 NEXT STEP
+
+If concepts are clear:
+
+Perfect — let’s do Day 5 Practice (GS-Level, Production Focus) 🔥
+Today you’ll write code like a backend engineer building a real trading system.
+
+📅 DAY 5 PRACTICE
+
+You’ll practice:
+
+🧠 OOP design
+🛠️ Refactoring
+🏗️ Trading system (Order + Risk + Strategy)
+⚙️ Production mindset
+🧠 1) OOP DESIGN PROBLEM (GS LEVEL)
+🔥 Problem: Pluggable Risk Rule System
+Requirement:
+Multiple rules
+Easily add new rules
+No modification in core engine
+🎯 Your Task:
+
+👉 Design:
+
+Rule base class
+MaxAmountRule
+CountryRule
+RiskEngine
+✅ Expected Solution
+from abc import ABC, abstractmethod
+
+class Rule(ABC):
+    @abstractmethod
+    def check(self, trade):
+        pass
+
+
+class MaxAmountRule(Rule):
+    def __init__(self, limit):
+        self.limit = limit
+
+    def check(self, trade):
+        return trade.amount <= self.limit
+
+
+class CountryRule(Rule):
+    def __init__(self, restricted):
+        self.restricted = restricted
+
+    def check(self, trade):
+        return trade.country not in self.restricted
+
+
+class RiskEngine:
+    def __init__(self, rules):
+        self.rules = rules
+
+    def evaluate(self, trade):
+        for rule in self.rules:
+            if not rule.check(trade):
+                return False
+        return True
+🧠 2) TRADING SYSTEM INTEGRATION
+🔥 Problem: Connect Strategy → Risk → Order
+🎯 Your Task:
+
+Build full flow:
+
+Strategy → Risk → Order Service
+✅ Implementation
+class Trade:
+    def __init__(self, trade_id, amount, country):
+        self.trade_id = trade_id
+        self.amount = amount
+        self.country = country
+
+
+class Strategy:
+    def generate_signal(self, prices):
+        return "BUY" if prices[-1] > prices[-2] else "SELL"
+
+
+import logging
+logger = logging.getLogger(__name__)
+
+class OrderService:
+    def place_order(self, trade, risk_engine):
+        if not risk_engine.evaluate(trade):
+            logger.warning(f"Trade rejected: {trade.trade_id}")
+            return "REJECTED"
+
+        logger.info(f"Trade executed: {trade.trade_id}")
+        return "EXECUTED"
+🛠️ 3) REFACTORING TASK (IMPORTANT)
+🔥 Given Code (Bad Design)
+def process_trade(trade):
+    if trade.amount <= 0:
+        print("Invalid")
+        return
+
+    if trade.amount > 50000:
+        print("Rejected")
+        return
+
+    print("Executed")
+🎯 Your Task:
+
+Refactor into:
+
+classes
+validation
+logging
+clean design
+✅ Expected Solution
+class TradeValidator:
+    def validate(self, trade):
+        if trade.amount <= 0:
+            raise ValueError("Invalid amount")
+
+
+class RiskEngine:
+    def check(self, trade):
+        return trade.amount <= 50000
+
+
+class OrderService:
+    def execute(self, trade):
+        logger.info("Executed trade")
+        return "EXECUTED"
+
+
+def process_trade(trade):
+    validator = TradeValidator()
+    risk = RiskEngine()
+    order = OrderService()
+
+    validator.validate(trade)
+
+    if not risk.check(trade):
+        return "REJECTED"
+
+    return order.execute(trade)
+⚙️ 4) PRODUCTION SCENARIO
+🔥 Problem: Duplicate Trade Execution
+Scenario:
+Same trade sent twice → executed twice
+🎯 Your Task:
+
+Fix using idempotency
+
+✅ Concept:
+processed_trades = set()
+
+def execute(trade):
+    if trade.trade_id in processed_trades:
+        return "DUPLICATE"
+
+    processed_trades.add(trade.trade_id)
+    return "EXECUTED"
+🧠 5) GS INTERVIEW SCENARIO QUESTIONS
+🔥 Q1
+
+How do you add a new rule?
+
+✔ Create new class → plug into engine
+
+🔥 Q2
+
+How to test system?
+
+✔ unit test each class
+
+🔥 Q3
+
+How to scale OrderService?
+
+✔ stateless
+✔ horizontal scaling
+✔ Kafka
+
+🔥 Q4
+
+How to handle failures?
+
+✔ retry
+✔ logging
+✔ fallback
+
+🏗️ 6) MINI SYSTEM TASK
+🔥 Build:
+
+👉 Full flow:
+
+Prices → Strategy → Trade → Risk → Order
+🎯 Requirements:
+
+✔ Generate signal
+✔ Create trade
+✔ Validate
+✔ Execute
+
+🏁 DAY 5 PRACTICE CHECKLIST
+🧠 OOP
+
+✅ Base class
+✅ polymorphism
+✅ modular design
+
+🏗️ System
+
+✅ strategy → risk → order
+✅ rule engine
+
+⚙️ Production
+
+✅ logging
+✅ idempotency
+✅ clean architecture
+
+🚀 NEXT STEP
+
+When done, say:
+
+👉 “Day 5 Done”
+
+Then we go:

@@ -1,0 +1,176 @@
+Logs + Alerts – GS-Level Understanding
+1. Why Logging Matters
+Provides traceability for every request and event.
+Helps detect errors, performance issues, security breaches.
+Supports auditability, crucial in financial systems like GS.
+2. Logging Best Practices
+Structured Logging
+Use JSON format with fields: timestamp, request_id, user_id, severity, message.
+Makes logs searchable in ELK / Splunk.
+Log Levels
+DEBUG: detailed developer info
+INFO: normal operations
+WARNING: unexpected events
+ERROR: runtime errors
+CRITICAL: system failures
+Correlation IDs
+Assign a unique request_id per API call to track requests across services.
+Centralized Logging
+Aggregates logs from all microservices to a single location.
+Retention & Rotation
+Keep logs for regulatory compliance, rotate old logs.
+Python Example – Structured Logging with Alerts
+import logging
+import uuid
+
+# Configure logger
+logger = logging.getLogger("gs_service")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    '{"timestamp":"%(asctime)s", "request_id":"%(request_id)s", "level":"%(levelname)s", "message":"%(message)s"}'
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+def log_request(message, level="info"):
+    request_id = str(uuid.uuid4())
+    extra = {"request_id": request_id}
+    if level == "info":
+        logger.info(message, extra=extra)
+    elif level == "warning":
+        logger.warning(message, extra=extra)
+    elif level == "error":
+        logger.error(message, extra=extra)
+        # Simulate alert trigger
+        print(f"ALERT: {message} | request_id: {request_id}")
+
+# Example usage
+log_request("User accessed trade endpoint")
+log_request("Trade quantity exceeded limit", level="warning")
+log_request("Critical DB connection failure", level="error")
+
+GS-Level Takeaways:
+
+Logs are structured for observability.
+Critical errors can trigger alerts automatically.
+Each log has request_id for traceability across microservices.
+📌 DSA – Mock Test Focus Areas
+
+At GS-level, mock test should cover:
+
+Arrays
+Sliding window, prefix sum, subarray problems
+HashMaps
+Frequency counters, two-sum, subarray sum problems
+Trees
+Binary Tree / BST traversals, LCA, max path sum
+Graphs
+BFS/DFS, shortest path, cycle detection
+Strings
+Palindromes, substrings, anagram grouping
+Complexity Analysis
+Always state time and space complexity for solutions
+Edge Cases
+Empty inputs, duplicates, large numbers
+
+Example – Subarray Sum Equals K (HashMap)
+
+def subarray_sum(nums, k):
+    count = 0
+    cum_sum = 0
+    hashmap = {0: 1}
+
+    for num in nums:
+        cum_sum += num
+        if (cum_sum - k) in hashmap:
+            count += hashmap[cum_sum - k]
+        hashmap[cum_sum] = hashmap.get(cum_sum, 0) + 1
+
+    return count
+
+print(subarray_sum([1,2,3,1,2,1], 3))  # Output: 4
+
+GS-Level Notes:
+
+Explains prefix sum + hashmap optimization
+Covers duplicates & overlapping subarrays
+O(n) time, O(n) space → suitable for high-volume production
+📌 Production – Observability
+1. What is Observability?
+Beyond monitoring; it's the ability to understand system behavior from outputs:
+Logs
+Metrics
+Traces
+2. Observability Components
+Component	Purpose
+Metrics	Quantitative data (request counts, latency, CPU usage)
+Logs	Event information, errors, structured for analysis
+Traces	End-to-end request flow across services (Distributed Tracing)
+3. Production Best Practices
+Expose Metrics
+Use Prometheus-compatible metrics endpoints
+Distributed Tracing
+Correlate requests across services using trace IDs
+Libraries: OpenTelemetry, Jaeger
+Centralized Logging
+Aggregated logs searchable with Kibana/ELK
+Alerts
+Trigger on thresholds: high error rates, latency, failed jobs
+Dashboards
+Visualize metrics, logs, traces for proactive monitoring
+Python Example – Observability with Metrics + Logging
+from fastapi import FastAPI, Request
+from prometheus_client import Counter, start_http_server
+import logging, uuid
+
+app = FastAPI()
+
+# Metrics
+REQUEST_COUNT = Counter("api_requests_total", "Total API requests")
+start_http_server(8001)  # Prometheus endpoint
+
+# Logging setup
+logger = logging.getLogger("obs_service")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    '{"timestamp":"%(asctime)s", "request_id":"%(request_id)s", "level":"%(levelname)s", "message":"%(message)s"}'
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+@app.middleware("http")
+async def observability_middleware(request: Request, call_next):
+    request_id = str(uuid.uuid4())
+    REQUEST_COUNT.inc()
+    logger.info(f"Request received: {request.url.path}", extra={"request_id": request_id})
+    response = await call_next(request)
+    return response
+
+@app.get("/trade")
+def trade():
+    return {"message": "Trade executed successfully"}
+
+Highlights:
+
+Metrics exposed for Prometheus
+Structured logging with request_id
+Middleware ensures every request is counted and logged
+Can integrate with alerting rules in Prometheus/Grafana
+
+✅ GS-Level Interview Takeaways
+
+Logs + Alerts → Structured logging + critical alerts simulate enterprise-grade monitoring.
+DSA → Mock tests prepare for arrays, trees, graphs, hashmaps, complexity awareness, edge cases.
+Observability → Combines metrics, logs, traces for full system insight.
+Demonstrates ability to build production-ready, monitored microservices.
+
+I can also build a full Python microservice for Day 56 that includes:
+
+Structured logging + alert simulation
+Metrics for Prometheus
+DSA-based endpoints for mock test
+Full observability stack (logs + metrics + request tracing)
+
+This would be exactly the kind of production system GS expects in interviews.

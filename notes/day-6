@@ -1,0 +1,1025 @@
+Perfect — Day 6 is where everything becomes REAL production 🔥
+You’ll move from logic → APIs + Kafka + microservices (like real fintech systems)
+Perfect—Day 6: Dictionaries + Frequency Count + Input Validation is a big leap toward production-grade thinking 🔥
+I’ll go deep with internals, patterns, and GS-level expectations.
+
+🧠 1) PYTHON DICTIONARY — IN-DEPTH
+🔹 What is a Dictionary?
+
+👉 Key–Value store
+
+user = {"id": 1, "name": "Dileep"}
+🔥 Internals (VERY IMPORTANT)
+
+👉 Python dict = hash table
+
+Key → hash() → index → value
+🧠 Why fast?
+lookup → O(1) average
+insert → O(1)
+delete → O(1)
+⚠️ Worst case
+hash collision → O(n)
+
+👉 But Python handles collisions efficiently
+
+🔥 Hashing (GS EXPECTATION)
+hash("abc")
+
+👉 Rules:
+
+keys must be immutable
+examples:
+✅ int, str, tuple
+❌ list, dict
+🔹 Common Operations
+d = {}
+
+d["a"] = 1        # insert
+d.get("a")        # safe access
+d.pop("a")        # remove
+"a" in d          # check key
+🔥 .get() vs []
+d["x"]   # KeyError if not present
+d.get("x")  # returns None
+
+👉 Always use .get() in production
+
+🔥 Iteration Patterns
+for k in d:
+    ...
+
+for k, v in d.items():
+    ...
+🔥 Dictionary Comprehension
+squares = {x: x*x for x in range(5)}
+🔥 Default Dict (IMPORTANT)
+from collections import defaultdict
+
+d = defaultdict(int)
+d["a"] += 1
+
+👉 avoids key errors
+
+🧠 2) DSA — FREQUENCY COUNT (CORE PATTERN)
+🔥 Problem
+
+Count occurrences of elements
+
+✅ Basic Solution
+def frequency(arr):
+    freq = {}
+
+    for num in arr:
+        if num in freq:
+            freq[num] += 1
+        else:
+            freq[num] = 1
+
+    return freq
+🔥 Optimized (GS STYLE)
+def frequency(arr):
+    freq = {}
+
+    for num in arr:
+        freq[num] = freq.get(num, 0) + 1
+
+    return freq
+🔥 Best (Using defaultdict)
+from collections import defaultdict
+
+def frequency(arr):
+    freq = defaultdict(int)
+
+    for num in arr:
+        freq[num] += 1
+
+    return freq
+🔥 Real Interview Follow-ups
+Q1: Top K frequent elements
+import heapq
+
+def top_k(freq, k):
+    return heapq.nlargest(k, freq, key=freq.get)
+Q2: Streaming data
+def stream_freq(stream):
+    freq = {}
+
+    for item in stream:
+        freq[item] = freq.get(item, 0) + 1
+
+👉 Used in:
+
+log processing
+Kafka consumers
+Q3: Memory constraints
+
+✔ Use approximate counting (Bloom filter)
+✔ external storage
+
+⚙️ 3) PRODUCTION — INPUT VALIDATION (VERY IMPORTANT)
+🔥 Why?
+
+👉 Prevent:
+
+crashes
+bad data
+security issues
+🔹 Basic Validation
+def validate_trade(trade):
+    if not isinstance(trade["amount"], (int, float)):
+        raise TypeError("Invalid amount type")
+
+    if trade["amount"] <= 0:
+        raise ValueError("Amount must be positive")
+🔥 GS-Level Validation
+✔ Type Validation
+✔ Range Validation
+✔ Required Fields
+✔ Format Validation
+🔥 Example (Production Style)
+def validate_trade(trade):
+    required = ["trade_id", "amount", "country"]
+
+    for field in required:
+        if field not in trade:
+            raise ValueError(f"Missing field: {field}")
+
+    if not isinstance(trade["amount"], (int, float)):
+        raise TypeError("Amount must be numeric")
+
+    if trade["amount"] <= 0:
+        raise ValueError("Amount must be > 0")
+🔥 FastAPI Validation (REAL WORLD)
+from pydantic import BaseModel
+
+class Trade(BaseModel):
+    trade_id: str
+    amount: float
+
+👉 Auto validation
+
+🔐 Security Validation
+✔ Prevent Injection
+# sanitize input
+✔ Limit size
+if len(data) > 1000:
+    raise ValueError("Too large")
+🔥 Fail Fast Pattern
+if invalid:
+    raise Exception
+
+👉 Stop early
+
+🧠 4) REAL SYSTEM FLOW
+API → Validate Input → Kafka → Process → Store
+
+👉 Validation happens at:
+
+API layer
+service layer
+🧠 5) GS INTERVIEW EXPECTATION
+
+👉 You should say:
+
+“Python dictionaries use hash tables for O(1) average operations. I use them for frequency counting efficiently. For production systems, I always validate inputs for type, required fields, and constraints, ensuring the system fails fast and avoids invalid data propagation.”
+
+
+We’ll focus on dictionaries, frequency count, and input validation, just like a Goldman Sachs Python interview.
+
+Answer one by one; I’ll critique and give follow-ups.
+
+🧠 ROUND 1 — PYTHON DICTIONARIES
+Q1 — Internals
+
+Explain why dictionary lookup in Python is O(1) on average. What happens in the worst case?
+
+👉 Strong answer should mention:
+
+hash table, key → hash → bucket
+collision handling
+resizing & load factor
+immutable keys requirement
+Q2 — Mutability & Keys
+
+What types can be used as dictionary keys? Why can’t lists or dicts be keys?
+
+Q3 — Iteration Patterns
+
+You have a dict of 10M items. How do you efficiently iterate over keys, values, or items?
+
+Follow-up: How do you do this for streaming large data?
+
+Q4 — Defaultdict & Counter
+
+Difference between dict, defaultdict, and Counter. When would you use each in production?
+
+🧠 ROUND 2 — FREQUENCY COUNT (DSA + PRODUCTION)
+Q5 — Count Frequencies
+
+Given a list of 1B trades, count frequency of each symbol efficiently.
+
+Follow-ups:
+
+Memory constraints → how to handle?
+Streaming → how to do real-time counting?
+Top K frequent symbols → approach?
+Q6 — Unhashable Items
+
+Frequency count when list contains dicts or lists (unhashable)?
+
+Expect:
+
+key extraction / serialization
+tuple conversion
+memory trade-offs
+Q7 — Real-time scenario
+
+Kafka stream of trades arriving at 100k/sec. You need to maintain per-symbol frequency count.
+
+Expect:
+
+in-memory dict for small window
+periodic flush to DB
+approximate counting (HyperLogLog) for huge streams
+⚙️ ROUND 3 — INPUT VALIDATION (PRODUCTION)
+Q8 — Core Validation
+
+Design input validation for a trade API: trade_id, symbol, amount, timestamp.
+
+Follow-up:
+
+How do you ensure fail-fast?
+How do you prevent invalid input from crashing downstream?
+How do you validate format, type, and range efficiently?
+Q9 — Security
+
+How would you prevent malicious input (e.g., huge payload, injection) in a dictionary-based API?
+
+Expect:
+
+length checks
+sanitization
+type & range validation
+proper exception handling
+Q10 — Logging + Validation
+
+How do you log invalid inputs without leaking sensitive data?
+
+Expect:
+
+structured logging
+masking PII / sensitive fields
+unique request ID
+🧠 ROUND 4 — TRICKY SCENARIOS
+Q11 — Combined DSA + Production
+
+You maintain a frequency dict of 1M symbols, but memory spikes. How do you optimize?
+
+Expect:
+
+pruning old keys
+sliding window
+approximate counting
+Q12 — Debugging
+
+Duplicate trades are counted multiple times in your frequency dict. How do you debug?
+
+Expect:
+
+check ingestion → Kafka offsets
+check deduplication logic
+check immutable keys / key collisions
+Q13 — Edge Cases
+Empty list
+Missing fields
+Mixed types (int/str)
+Null / None
+🚀 GS INTERVIEW TIPS
+Clarify constraints first: size, frequency, memory, latency.
+Propose clean solution: code + complexity + edge cases.
+Trade-offs: memory vs speed, accuracy vs approximation.
+Production mindset: logging, retries, security, validation.
+Fail fast + fail safe: catch invalid input early, don’t propagate.
+
+
+📅 DAY 6 — FASTAPI + KAFKA + MICROSERVICES
+🧠 1) CORE CONCEPT — REST API
+🔹 What is an API?
+
+👉 A way for systems to communicate
+
+Client → API → Service → Response
+🔥 Real Trading Flow
+Frontend → Order API → Risk → Execution
+⚡ 2) FASTAPI (MODERN PYTHON API)
+🔹 Why FastAPI?
+Fast
+Async
+Production-ready
+Used in real systems
+
+👉 FastAPI
+
+🔥 Basic API
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"message": "Trading system running"}
+🔥 POST API (Order Service)
+from pydantic import BaseModel
+
+class TradeRequest(BaseModel):
+    trade_id: str
+    amount: float
+
+@app.post("/order")
+def place_order(trade: TradeRequest):
+    return {"status": "received", "trade_id": trade.trade_id}
+
+👉 This is how real services accept requests
+
+🧠 3) VALIDATION (PRODUCTION CRITICAL)
+
+FastAPI automatically validates:
+
+class TradeRequest(BaseModel):
+    amount: float
+
+👉 If invalid → API rejects
+
+⚡ 4) KAFKA CONCEPT (CORE SYSTEM)
+🔹 What is Kafka?
+
+👉 Event streaming platform
+
+👉 Apache Kafka
+
+🔥 Concept
+Producer → Topic → Consumer
+⚙️ 5) KAFKA FLOW IN TRADING SYSTEM
+Order API → Kafka → Risk Service → Kafka → Order Service
+
+👉 Async system (important for scale)
+
+🧠 6) KAFKA PRODUCER (PYTHON)
+from kafka import KafkaProducer
+import json
+
+producer = KafkaProducer(
+    bootstrap_servers="localhost:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+)
+
+producer.send("orders", {"trade_id": "T1", "amount": 10000})
+🧠 7) KAFKA CONSUMER
+from kafka import KafkaConsumer
+import json
+
+consumer = KafkaConsumer(
+    "orders",
+    bootstrap_servers="localhost:9092",
+    value_deserializer=lambda m: json.loads(m.decode("utf-8"))
+)
+
+for message in consumer:
+    print(message.value)
+🏗️ 8) BUILD MICRO SERVICE FLOW
+🔥 Architecture
+API → Kafka → Risk → Kafka → Order
+🔹 Step 1: API sends trade
+@app.post("/order")
+def place_order(trade: TradeRequest):
+    producer.send("orders", trade.dict())
+    return {"status": "sent to processing"}
+🔹 Step 2: Risk Service consumes
+for msg in consumer:
+    trade = msg.value
+
+    if trade["amount"] > 50000:
+        print("Rejected")
+    else:
+        producer.send("approved", trade)
+🔹 Step 3: Order Service executes
+for msg in approved_consumer:
+    trade = msg.value
+    print("Executing trade:", trade)
+⚙️ 9) PRODUCTION CONCEPTS (VERY IMPORTANT)
+🔥 1. Asynchronous Processing
+
+👉 API returns immediately
+👉 Kafka handles processing
+
+🔥 2. Decoupling
+
+👉 Services don’t depend on each other
+
+🔥 3. Scalability
+
+👉 Add more consumers
+
+🔐 10) FAULT HANDLING
+🔥 Retry
+
+👉 Retry failed messages
+
+🔥 DLQ (Dead Letter Queue)
+
+👉 Failed messages stored
+
+🔥 Idempotency
+
+👉 Avoid duplicate execution
+
+🧠 11) GS INTERVIEW QUESTIONS (DAY 6)
+🔥 Q1
+
+Why Kafka over REST?
+
+✔ async
+✔ scalable
+✔ decoupled
+
+🔥 Q2
+
+How to handle message failure?
+
+✔ retry + DLQ
+
+🔥 Q3
+
+How to ensure no duplicate?
+
+✔ idempotency
+
+🔥 Q4
+
+How to scale system?
+
+✔ partitions + consumer groups
+
+🏗️ 12) MINI PROJECT (IMPORTANT)
+🔥 Build:
+
+✔ FastAPI Order API
+✔ Kafka Producer
+✔ Risk Consumer
+✔ Order Consumer
+
+🏁 DAY 6 CHECKLIST
+🐍 Python
+
+✅ FastAPI basics
+✅ Pydantic models
+
+⚙️ Kafka
+
+✅ producer
+✅ consumer
+✅ topics
+
+🏗️ System
+
+✅ API → Kafka → Services
+
+🔥 Production
+
+✅ async processing
+✅ fault handling
+✅ scalability
+
+🚀 NEXT STEP
+
+When ready, say:
+
+Perfect—let’s do Day 6 Practice (GS-level, production-focused) 🔥
+You’ll build a real microservice flow: FastAPI → Kafka → Risk → Order, with reliability features.
+
+📅 DAY 6 PRACTICE
+What you’ll implement
+🐍 FastAPI Order API
+⚡ Kafka Producer/Consumers
+🧠 Risk Service (rules + idempotency)
+🏗️ Order Service (execution + idempotency)
+🔐 Reliability (retries, DLQ, logging)
+🧠 1) FASTAPI — ORDER API (ENTRY POINT)
+🎯 Task
+
+Accept a trade → push to Kafka topic orders
+
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
+from kafka import KafkaProducer
+import json, uuid
+
+app = FastAPI()
+
+class TradeRequest(BaseModel):
+    trade_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    amount: float
+    country: str
+
+producer = KafkaProducer(
+    bootstrap_servers="localhost:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+)
+
+@app.post("/order")
+def place_order(trade: TradeRequest):
+    payload = trade.dict()
+    producer.send("orders", payload)
+    return {"status": "QUEUED", "trade_id": payload["trade_id"]}
+⚙️ 2) RISK SERVICE (CONSUMER + RULE ENGINE)
+🎯 Task
+
+Consume from orders → apply rules → produce to approved or rejected
+
+from kafka import KafkaConsumer, KafkaProducer
+import json, logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("risk")
+
+consumer = KafkaConsumer(
+    "orders",
+    bootstrap_servers="localhost:9092",
+    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+    enable_auto_commit=True,
+    group_id="risk-group"
+)
+
+producer = KafkaProducer(
+    bootstrap_servers="localhost:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+)
+
+processed_ids = set()  # idempotency (demo; use Redis in prod)
+
+def max_amount_rule(trade):
+    return trade["amount"] <= 50000
+
+def country_rule(trade):
+    return trade["country"] != "restricted"
+
+rules = [max_amount_rule, country_rule]
+
+def evaluate(trade):
+    for r in rules:
+        if not r(trade):
+            return False
+    return True
+
+for msg in consumer:
+    trade = msg.value
+
+    # idempotency
+    if trade["trade_id"] in processed_ids:
+        logger.warning(f"Duplicate: {trade['trade_id']}")
+        continue
+
+    processed_ids.add(trade["trade_id"])
+
+    try:
+        if evaluate(trade):
+            producer.send("approved", trade)
+            logger.info(f"APPROVED {trade['trade_id']}")
+        else:
+            producer.send("rejected", trade)
+            logger.info(f"REJECTED {trade['trade_id']}")
+    except Exception as e:
+        logger.error(f"Risk error: {e}")
+        producer.send("dlq", trade)  # DLQ
+🏗️ 3) ORDER SERVICE (EXECUTION)
+🎯 Task
+
+Consume approved → execute trade → ensure no duplicates
+
+from kafka import KafkaConsumer
+import json, logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("order")
+
+consumer = KafkaConsumer(
+    "approved",
+    bootstrap_servers="localhost:9092",
+    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+    group_id="order-group"
+)
+
+executed_ids = set()  # idempotency
+
+def execute(trade):
+    if trade["trade_id"] in executed_ids:
+        return "DUPLICATE"
+
+    executed_ids.add(trade["trade_id"])
+    logger.info(f"EXECUTED {trade['trade_id']}")
+    return "EXECUTED"
+
+for msg in consumer:
+    trade = msg.value
+    execute(trade)
+🔐 4) RELIABILITY TASKS (GS LEVEL)
+🔥 A) Retry with Backoff (wrap external calls)
+import time
+
+def retry(fn, retries=3):
+    for i in range(retries):
+        try:
+            return fn()
+        except Exception:
+            time.sleep(2 ** i)
+    raise
+🔥 B) Dead Letter Queue (DLQ)
+Topic: dlq
+Send failed messages there (already added in Risk)
+🔥 C) Idempotency
+Already used trade_id
+In production → use Redis/DB
+🧠 5) DEBUGGING SCENARIOS (IMPORTANT)
+🔥 Scenario 1: Duplicate Execution
+
+✔ Fix → idempotency (already added)
+
+🔥 Scenario 2: Consumer Lag
+
+✔ Cause:
+
+slow processing
+✔ Fix:
+increase partitions
+scale consumers
+🔥 Scenario 3: Message Loss
+
+✔ Fix:
+
+acks='all'
+replication
+🔥 Scenario 4: Service Crash
+
+✔ Fix:
+
+Kafka replays messages
+offset management
+🧠 6) GS-LEVEL INTERVIEW QUESTIONS
+🔥 Q1
+
+Why use Kafka instead of REST between services?
+
+✔ async, scalable, decoupled
+
+🔥 Q2
+
+How to ensure exactly-once processing?
+
+✔ idempotency + Kafka settings
+
+🔥 Q3
+
+How to scale consumers?
+
+✔ partitions + consumer groups
+
+🔥 Q4
+
+How to handle failures?
+
+✔ retry + DLQ + fallback
+
+🏗️ 7) MINI PROJECT TASK
+🎯 Build full system:
+FastAPI → Kafka (orders)
+          ↓
+      Risk Service
+          ↓
+    approved/rejected
+          ↓
+      Order Service
+✔ Add:
+logging
+idempotency
+retry
+DLQ
+🏁 DAY 6 PRACTICE CHECKLIST
+🐍 Python
+
+✅ FastAPI API
+✅ Pydantic validation
+
+⚙️ Kafka
+
+✅ Producer
+✅ Consumer
+✅ Topics
+
+🏗️ System
+
+✅ API → Kafka → Services
+
+🔥 Production
+
+✅ Retry
+✅ DLQ
+✅ Idempotency
+
+🚀 NEXT STEP
+
+When done, say:
+
+1) WHAT GS EXPECTS TODAY
+
+They are testing:
+
+Can you design event-driven systems
+Do you understand Kafka deeply
+Can you build reliable APIs
+Can you handle failures + scale
+⚡ 2) FASTAPI — INTERVIEW DEPTH
+🔥 Q1: Why use FastAPI over Flask?
+
+✔ Async support
+✔ High performance
+✔ Automatic validation
+✔ Type safety
+
+🔥 Q2: How does validation work?
+
+👉 Uses Pydantic models
+
+class Trade(BaseModel):
+    amount: float
+
+✔ Automatically rejects invalid input
+
+🔥 Q3: Sync vs Async API?
+Sync
+blocks thread
+Async
+non-blocking
+better for IO-heavy systems
+GS Answer:
+
+“For IO-heavy services like Kafka or DB calls, async APIs improve throughput.”
+
+⚡ 3) KAFKA — CORE INTERVIEW TOPICS
+🧠 1. Producer → Topic → Consumer
+Producer → Kafka → Consumer
+🔥 Q1: What is a partition?
+
+👉 Kafka splits topic into partitions for parallel processing
+
+🔥 Q2: What is a consumer group?
+
+👉 Multiple consumers reading same topic
+
+✔ each partition → one consumer
+
+🔥 Q3: What is offset?
+
+👉 Pointer to message position
+
+🔥 Q4: What is ISR?
+
+👉 In-Sync Replicas → ensures durability
+
+🔥 Q5: acks in Kafka?
+0 → no guarantee
+1 → leader only
+all → safest
+⚙️ 4) SYSTEM DESIGN QUESTIONS (VERY IMPORTANT)
+🔥 Q1: Design Order Processing System
+Expected Answer:
+Client → API → Kafka → Risk → Kafka → Order
+🔥 Q2: Why Kafka instead of REST?
+
+✔ Async
+✔ Decoupled
+✔ High throughput
+
+🔥 Q3: How to scale system?
+
+✔ Add partitions
+✔ Add consumers
+
+🔐 5) FAILURE HANDLING (MUST KNOW)
+🔥 Q1: What if consumer crashes?
+
+✔ Kafka retains messages
+✔ Consumer resumes from offset
+
+🔥 Q2: What if message fails?
+
+✔ Retry
+✔ DLQ
+
+🔥 Q3: What if duplicate messages?
+
+✔ Idempotency
+
+⚡ 6) REAL SCENARIO QUESTIONS
+🔥 Scenario 1: Duplicate trades executed
+
+✔ Solution:
+
+idempotency key
+unique trade ID
+🔥 Scenario 2: High latency
+
+✔ Solution:
+
+async processing
+caching
+reduce DB calls
+🔥 Scenario 3: System overloaded
+
+✔ Solution:
+
+rate limiting
+backpressure
+scale consumers
+🔥 Scenario 4: Kafka lag increasing
+
+✔ Solution:
+
+increase partitions
+add consumers
+optimize processing
+🧠 7) PRODUCTION THINKING (GS LEVEL)
+🔥 1. Idempotency
+Same request → same result
+🔥 2. Retry + Backoff
+🔥 3. DLQ (Dead Letter Queue)
+🔥 4. Observability
+
+✔ Logging
+✔ Metrics
+✔ Alerts
+
+🧠 8) WHAT YOU SHOULD SAY (IMPORTANT)
+🎯 Perfect Answer Example
+
+👉
+“I would design the system using FastAPI for API handling with Pydantic validation.
+For inter-service communication, I would use Kafka to enable asynchronous and decoupled processing.
+Each service would be stateless and scalable using consumer groups and partitions.
+To ensure reliability, I would implement retries with backoff, idempotency to avoid duplicate processing, and a dead letter queue for failed messages.
+Additionally, I would monitor the system using logs and metrics to detect failures and performance issues.”
+
+🏗️ 9) MINI MOCK INTERVIEW (TRY ANSWERING)
+🔥 Q1
+
+Design a system handling 1M trades/sec
+
+🔥 Q2
+
+How to ensure no duplicate trade execution?
+
+🔥 Q3
+
+What happens if Kafka broker goes down?
+
+🔥 Q4
+
+How to debug production issue?
+
+🏁 DAY 6 GS CHECKLIST
+🐍 Python
+
+✅ FastAPI
+✅ validation
+
+⚙️ Kafka
+
+✅ partitions
+✅ consumer groups
+✅ offset
+
+🏗️ System
+
+✅ API → Kafka → Services
+
+🔥 Production
+
+✅ retry
+✅ DLQ
+✅ idempotency
+
+Q1
+
+Design an order processing system that can handle high throughput (e.g., 1M trades/sec).
+
+👉 Cover:
+
+Components (API, Kafka, services)
+Data flow
+Scalability
+
+Your answer (2–3 minutes):
+Type your answer, then I’ll challenge it.
+
+⚙️ ROUND 2 — KAFKA DEEP DIVE
+Q2
+
+Explain how Kafka ensures durability and no data loss.
+
+👉 Cover:
+
+partitions
+replication
+ISR
+acks
+
+Your answer:
+
+Follow-up (be ready):
+What happens if the leader broker fails?
+How do consumers recover?
+🔐 ROUND 3 — RELIABILITY & FAILURES
+Q3
+
+How do you handle duplicate trade execution?
+
+👉 Expect:
+
+idempotency
+unique keys
+storage
+
+Your answer:
+
+Follow-up:
+Where do you store idempotency keys?
+What if the service restarts?
+⚡ ROUND 4 — API DESIGN (FastAPI)
+Q4
+
+Design a POST /order API for trade submission.
+
+👉 Cover:
+
+request validation
+response
+async handling
+
+Your answer:
+
+Follow-up:
+How do you validate input?
+How do you handle invalid requests?
+🧠 ROUND 5 — SCENARIO BASED
+Q5
+
+Your Kafka consumer is lagging behind. What will you do?
+
+👉 Cover:
+
+scaling
+partitions
+performance
+
+Your answer:
+
+🔥 BONUS ROUND (GS DIFFICULTY)
+Q6
+
+What if Kafka is down? How will your system behave?
+
+👉 Expect:
+
+fallback
+buffering
+fail-safe
+
+Your answer:
+
+🧪 ROUND 6 — DEBUGGING
+Q7
+
+Production issue: trades are being processed twice. How do you debug?
+
+👉 Expect:
+
+logs
+tracing
+idempotency check
+
+Your answer:
+
+📊 HOW THIS WILL WORK
+
+👉 You answer each question
+👉 I will:
+
+evaluate like GS interviewer
+give corrections
+ask deeper follow-ups
+improve your answers
+🚀 START NOW
+
+👉 Answer Q1 only first:
+
+“Design high-throughput order processing system”

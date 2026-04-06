@@ -1,0 +1,118 @@
+DAY 46 — Vector Databases + Graphs (Medium) + Search Optimization
+1️⃣ Vector Databases — Core Concepts
+🔹 Core Idea:
+Vector Databases (VDBs) store and query embeddings (high-dimensional vectors) efficiently.
+Used for semantic search, recommendations, fraud detection, and similarity retrieval.
+Examples: Pinecone, FAISS, Weaviate, Milvus.
+🔹 GS-Level Focus:
+Key Features
+Fast similarity search using cosine, Euclidean, or inner product metrics
+Handles millions of embeddings efficiently
+Supports real-time ingestion and queries
+Applications in Finance
+Retrieve similar news articles or trade patterns
+Portfolio similarity or clustering
+Fraud detection using transaction embeddings
+Real-time recommendations for trades
+Integration
+Embedding generation → store in VDB → query for nearest neighbors → downstream trading, alerts, or dashboards
+🔹 Python Example — FAISS Vector DB
+import faiss
+import numpy as np
+
+# Sample embeddings
+data = np.random.random((100, 128)).astype('float32')  # 100 vectors, 128 dimensions
+
+# Build FAISS index
+index = faiss.IndexFlatL2(128)  # L2 distance metric
+index.add(data)
+
+# Query: find 5 nearest neighbors for a random vector
+query = np.random.random((1, 128)).astype('float32')
+distances, indices = index.search(query, k=5)
+print("Nearest neighbors indices:", indices)
+print("Distances:", distances)
+
+GS-Level Reasoning:
+
+Vector DB → real-time semantic search over embeddings
+Efficiently scales to millions of vectors for trading and risk pipelines
+2️⃣ Graphs — Medium Level DSA
+🔹 Core Idea:
+Medium-level graph problems involve:
+Weighted graphs (edge weights for trade amounts, correlation strength)
+Directed graphs (transaction flows, risk propagation)
+Pathfinding, cycles, connected components
+🔹 Python Example — Weighted Graph & BFS/DFS
+graph = {
+    'A': {'B': 5, 'C': 3},
+    'B': {'D': 2},
+    'C': {'D': 4, 'E': 6},
+    'D': {'F': 1},
+    'E': {},
+    'F': {}
+}
+
+# DFS to explore graph
+def dfs_weighted(graph, node, visited=None):
+    if visited is None:
+        visited = set()
+    visited.add(node)
+    for neighbor in graph.get(node, {}):
+        if neighbor not in visited:
+            dfs_weighted(graph, neighbor, visited)
+    return visited
+
+print("DFS Visited:", dfs_weighted(graph, 'A'))
+
+GS-Level Insight:
+
+Weighted/directed graphs → model financial dependencies or trade flows
+DFS/BFS → explore risk paths, detect cycles, analyze market connectivity
+3️⃣ Production — Search Optimization
+🔹 Core Concepts:
+Challenges
+Large embedding datasets → naive linear search is slow
+Latency-sensitive applications → alerts, recommendations
+Techniques
+Approximate Nearest Neighbor (ANN) search (FAISS, HNSW)
+Index partitioning / sharding for distributed queries
+Caching frequently queried vectors
+Preprocessing embeddings (normalization, quantization)
+Monitoring & Logging
+Track query latency, success/failure, number of neighbors returned
+Monitor drift in embeddings over time
+🔹 Python Example — FAISS ANN Optimization
+import faiss
+import numpy as np
+
+# Random vectors
+data = np.random.random((10000, 128)).astype('float32')
+
+# ANN index using HNSW
+index = faiss.IndexHNSWFlat(128, 32)  # 32 neighbors in graph
+index.hnsw.efConstruction = 40
+index.add(data)
+
+# Query
+query = np.random.random((1, 128)).astype('float32')
+distances, indices = index.search(query, k=5)
+print("Optimized NN indices:", indices)
+
+GS-Level Reasoning:
+
+ANN → fast, scalable search
+Essential for real-time financial pipelines
+4️⃣ Scenario-Based Questions — GS-Level
+Scenario	How to Answer
+“Search is too slow on large embeddings”	Implement ANN indexing, vector normalization, partitioning, or caching.
+“Graph shows cycles in transaction flows”	Detect cycles with DFS or Tarjan’s algorithm, alert fraud/risk teams.
+“Embedding drift over time”	Recompute embeddings periodically, log performance metrics, and update vector DB.
+“Query fails on missing vectors”	Use fallback defaults, log error, or retrieve closest available vectors.
+“High-latency real-time recommendations”	Optimize index, batch queries, parallelize processing, and monitor logs.
+5️⃣ GS-Level Key Takeaways
+Vector DBs → real-time similarity search over embeddings for finance/trading
+Graphs (medium) → model weighted/directed relationships in portfolios, transactions, or risk networks
+Search Optimization → ANN, partitioning, caching → low-latency production pipelines
+Production Readiness → monitoring latency, embedding drift, structured logging
+Scenario Thinking → anticipate scaling, failures, and optimization opportunities in interview discussions

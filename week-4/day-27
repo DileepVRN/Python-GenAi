@@ -1,0 +1,840 @@
+Perfect — now we’re stepping into REAL FINTECH SYSTEM DESIGN + CODING 🚀
+This is exactly what companies like Goldman Sachs expect.
+
+📅 DAY 27 — Trading Service 1 (Portfolio Service) + Sorting + DB Saving
+🧠 1. What is Portfolio Service (REAL UNDERSTANDING)
+
+👉 Portfolio Service =
+Tracks what assets a user owns (stocks, crypto, etc.)
+
+🔥 Real-World Example
+
+User buys:
+
+10 shares of TCS
+5 shares of Infosys
+
+👉 Portfolio Service stores:
+
+What user owns
+Quantity
+Avg price
+Current value
+🧠 Why This Service Exists
+
+In trading systems:
+
+Order Service → executes trade
+Portfolio Service → updates holdings
+
+👉 Separation = Microservice architecture
+
+🟢 2. Portfolio Data Model (DB DESIGN)
+🔹 Table: portfolio
+CREATE TABLE portfolio (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
+    stock_symbol VARCHAR(10),
+    quantity INT,
+    avg_price DECIMAL(10,2),
+    last_updated TIMESTAMP
+);
+🧠 Key Concepts
+quantity → total shares
+avg_price → weighted average
+user_id → ownership
+🟡 3. Core Business Logic (INTERVIEW CRITICAL)
+🔥 Case: BUY Stock
+
+👉 Formula:
+
+𝑎
+𝑣
+𝑔
+_
+𝑝
+𝑟
+𝑖
+𝑐
+𝑒
+=
+(
+𝑜
+𝑙
+𝑑
+_
+𝑞
+𝑡
+𝑦
+⋅
+𝑜
+𝑙
+𝑑
+_
+𝑝
+𝑟
+𝑖
+𝑐
+𝑒
+)
++
+(
+𝑛
+𝑒
+𝑤
+_
+𝑞
+𝑡
+𝑦
+⋅
+𝑛
+𝑒
+𝑤
+_
+𝑝
+𝑟
+𝑖
+𝑐
+𝑒
+)
+𝑜
+𝑙
+𝑑
+_
+𝑞
+𝑡
+𝑦
++
+𝑛
+𝑒
+𝑤
+_
+𝑞
+𝑡
+𝑦
+avg_price=
+old_qty+new_qty
+(old_qty⋅old_price)+(new_qty⋅new_price)
+	​
+
+
+🔴 Case: SELL Stock
+
+👉 Logic:
+
+Reduce quantity
+If quantity = 0 → delete row
+🧠 Edge Cases (VERY IMPORTANT)
+Selling more than owned ❌
+Concurrent updates ⚠️
+Duplicate transactions
+🔥 4. API Design (Production Level)
+🔹 Endpoint
+POST /api/v1/portfolio/update
+🔹 Request JSON
+{
+  "userId": 1,
+  "stockSymbol": "TCS",
+  "quantity": 10,
+  "price": 3500,
+  "type": "BUY"
+}
+🔹 Response JSON
+{
+  "status": "SUCCESS",
+  "data": {
+    "userId": 1,
+    "stockSymbol": "TCS",
+    "quantity": 15,
+    "avgPrice": 3400
+  }
+}
+
+We’ll build it like a real fintech backend (not just scripts).
+
+🧠 1. Tech Stack (Python Version)
+Framework: FastAPI
+DB: SQLite (for demo, scalable to PostgreSQL)
+ORM: SQLAlchemy
+🟢 2. Project Structure (Production Style)
+portfolio-service/
+ ├── main.py
+ ├── models.py
+ ├── schemas.py
+ ├── service.py
+ ├── database.py
+🔴 3. Database Setup
+database.py
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+DATABASE_URL = "sqlite:///./portfolio.db"
+
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(bind=engine)
+
+Base = declarative_base()
+🟢 4. Portfolio Model (DB Table)
+models.py
+from sqlalchemy import Column, Integer, Float, String
+from database import Base
+
+class Portfolio(Base):
+    __tablename__ = "portfolio"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)
+    stock_symbol = Column(String)
+    quantity = Column(Integer)
+    avg_price = Column(Float)
+🟡 5. Request/Response Schemas
+schemas.py
+from pydantic import BaseModel
+
+class PortfolioRequest(BaseModel):
+    transactionId: str
+    userId: int
+    stockSymbol: str
+    quantity: int
+    price: float
+    type: str   # BUY or SELL
+
+
+class PortfolioResponse(BaseModel):
+    userId: int
+    stockSymbol: str
+    quantity: int
+    avgPrice: float
+🔥 6. Core Business Logic (IMPORTANT)
+service.py
+from sqlalchemy.orm import Session
+from models import Portfolio
+
+def update_portfolio(db: Session, req):
+
+    portfolio = db.query(Portfolio).filter_by(
+        user_id=req.userId,
+        stock_symbol=req.stockSymbol
+    ).first()
+
+    if not portfolio:
+        portfolio = Portfolio(
+            user_id=req.userId,
+            stock_symbol=req.stockSymbol,
+            quantity=0,
+            avg_price=0
+        )
+        db.add(portfolio)
+
+    # BUY LOGIC
+    if req.type == "BUY":
+        total_qty = portfolio.quantity + req.quantity
+
+        avg_price = (
+            (portfolio.quantity * portfolio.avg_price) +
+            (req.quantity * req.price)
+        ) / total_qty
+
+        portfolio.quantity = total_qty
+        portfolio.avg_price = avg_price
+
+    # SELL LOGIC
+    elif req.type == "SELL":
+        if portfolio.quantity < req.quantity:
+            raise Exception("Insufficient shares")
+
+        portfolio.quantity -= req.quantity
+
+    db.commit()
+    db.refresh(portfolio)
+
+    return portfolio
+🟢 7. API Layer (FastAPI)
+main.py
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine, Base
+import models, schemas, service
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@app.post("/portfolio/update")
+def update_portfolio_api(req: schemas.PortfolioRequest, db: Session = Depends(get_db)):
+    try:
+        result = service.update_portfolio(db, req)
+
+        return {
+            "status": "SUCCESS",
+            "data": {
+                "userId": result.user_id,
+                "stockSymbol": result.stock_symbol,
+                "quantity": result.quantity,
+                "avgPrice": result.avg_price
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+🧠 8. Sorting (Real Use Case)
+Top Stocks by Value
+def get_top_stocks(db: Session):
+    portfolios = db.query(Portfolio).all()
+
+    sorted_data = sorted(
+        portfolios,
+        key=lambda p: p.quantity * p.avg_price,
+        reverse=True
+    )
+
+    return sorted_data[:5]
+🔥 9. Production-Level Improvements (VERY IMPORTANT)
+🔹 1. Idempotency (Prevent duplicate updates)
+
+👉 Add table:
+
+processed_transactions = set()
+if req.transactionId in processed_transactions:
+    return portfolio
+processed_transactions.add(req.transactionId)
+🔹 2. Concurrency (Important Concept)
+
+👉 In real systems:
+
+Use DB locking
+Use version column
+🔹 3. Validation
+from pydantic import Field
+
+quantity: int = Field(gt=0)
+price: float = Field(gt=0)
+⚡ 10. How This Works (End-to-End Flow)
+Client → FastAPI → Service Layer → DB
+
+👉 Future upgrade:
+
+Order Service → Kafka → Portfolio Service
+🧠 11. Interview Questions (Python Version)
+❓ How do you calculate avg price?
+
+✅ Weighted average formula
+
+❓ How do you handle concurrent updates?
+
+✅ DB locking / versioning
+
+❓ Why FastAPI?
+
+✅ High performance + async support
+
+❓ How to scale?
+
+✅ Kafka + microservices
+
+🏁 Final Output
+
+👉 You now have:
+
+Production-style Python service ✅
+Real fintech logic ✅
+Interview-ready answers ✅
+🚀 Next Step
+🟢 5. Spring Boot Implementation (REAL CODE)
+🔹 Entity
+@Entity
+public class Portfolio {
+    @Id @GeneratedValue
+    private Long id;
+    private Long userId;
+    private String stockSymbol;
+    private int quantity;
+    private double avgPrice;
+}
+🔹 Repository
+public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
+    Optional<Portfolio> findByUserIdAndStockSymbol(Long userId, String stockSymbol);
+}
+🔹 Service (CORE LOGIC)
+@Transactional
+public Portfolio updatePortfolio(PortfolioRequest req) {
+
+    Portfolio p = repo.findByUserIdAndStockSymbol(req.getUserId(), req.getStockSymbol())
+        .orElse(new Portfolio());
+
+    if ("BUY".equals(req.getType())) {
+        int totalQty = p.getQuantity() + req.getQuantity();
+
+        double avgPrice = ((p.getQuantity() * p.getAvgPrice()) +
+                          (req.getQuantity() * req.getPrice())) / totalQty;
+
+        p.setQuantity(totalQty);
+        p.setAvgPrice(avgPrice);
+
+    } else if ("SELL".equals(req.getType())) {
+        if (p.getQuantity() < req.getQuantity()) {
+            throw new RuntimeException("Insufficient shares");
+        }
+
+        p.setQuantity(p.getQuantity() - req.getQuantity());
+    }
+
+    return repo.save(p);
+}
+🟡 6. DB Saving (Production Concepts)
+🧠 Important Points
+🔹 1. Transaction Management
+@Transactional
+
+👉 Ensures:
+
+No partial updates
+Data consistency
+🔹 2. Concurrency Handling (VERY IMPORTANT)
+
+👉 Problem:
+2 requests updating same stock
+
+👉 Solution:
+
+Optimistic locking (@Version)
+Or DB locking
+🔹 3. Idempotency
+
+👉 Same request should not update twice
+(Use transactionId)
+
+🔴 7. DSA — Sorting (INTERVIEW + REAL USE)
+🧠 Why Sorting Matters
+
+👉 Used in:
+
+Top stocks
+Leaderboards
+Portfolio ranking
+🔹 Java Sorting Example
+list.sort((a, b) -> Double.compare(b.getAvgPrice(), a.getAvgPrice()));
+🔹 Types
+Quick Sort → Fastest (avg)
+Merge Sort → Stable
+TimSort → Java default
+🧠 Interview Question
+❓ Which sorting is used in Java?
+
+✅ TimSort (hybrid of merge + insertion)
+
+⚡ 8. Real System Flow (IMPORTANT)
+
+👉 Complete flow:
+
+User places order
+Order Service processes
+Event sent to Kafka
+Portfolio Service consumes
+DB updated
+🧠 9. Interview Questions (HIGH LEVEL)
+❓ How do you design Portfolio Service?
+
+✅ Answer:
+
+API layer
+Service logic
+DB schema
+Concurrency handling
+Event-driven updates
+❓ How to handle concurrent updates?
+
+✅ Answer:
+
+Optimistic locking
+Transactions
+❓ How to scale?
+
+✅ Answer:
+
+Kafka (async updates)
+Caching (Redis)
+🏁 End of Day 27 Checklist
+
+✅ I understand Portfolio Service
+✅ I can write BUY/SELL logic
+✅ I understand DB saving
+✅ I know sorting basics
+
+🔥 Homework (VERY IMPORTANT)
+
+👉 Build:
+
+API:
+POST /portfolio/update
+
+Add:
+
+BUY / SELL logic
+DB saving
+Validation
+🚀 Tomorrow (Day 28)
+
+👉 You’ll learn:
+
+🔥 Trading Service 2: Order Service
+👉 Real trading system design
+👉 Kafka integration
+
+💬 Next Step
+
+Say:
+👉 “Day 27 Done”
+
+Then we move to Order Service (core trading system) 💥
+
+📅 DAY 27 — Portfolio Service + Sorting + DB Saving (Fintech Level)
+
+I’ll explain like a senior backend engineer in a trading system (what companies like Goldman Sachs expect).
+
+🧠 1. Portfolio Service — REAL SYSTEM THINKING
+🔥 What it REALLY is
+
+👉 Portfolio Service is state management of user assets
+
+It answers:
+
+“What does user own right now?”
+“What is current value?”
+“How much profit/loss?”
+🧠 Why Separate Service?
+
+👉 In trading architecture:
+
+Order Service → executes trade
+Portfolio Service → maintains holdings
+✅ Why separation?
+Loose coupling
+Independent scaling
+Fault isolation
+
+👉 Example:
+
+If portfolio fails → orders still execute
+Later reconciliation fixes data
+🔥 Real Production Flow
+User places order
+   ↓
+Order Service
+   ↓
+Kafka Event (TRADE_EXECUTED)
+   ↓
+Portfolio Service consumes
+   ↓
+Update DB
+
+👉 KEY POINT:
+👉 Portfolio should be event-driven, NOT tightly coupled
+
+🟢 2. Data Modeling — DEEP DESIGN
+🔹 Portfolio Table (Enhanced)
+CREATE TABLE portfolio (
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    stock_symbol VARCHAR(10),
+    quantity INT,
+    avg_price DECIMAL(10,2),
+    version INT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+🧠 Why these fields?
+Field	Purpose
+quantity	Current holding
+avg_price	Cost basis
+version	Concurrency control
+timestamps	Auditing
+🔥 Important Concept: Derived vs Stored Data
+
+👉 Stored:
+
+quantity
+avg_price
+
+👉 Derived (calculated):
+
+current value
+profit/loss
+
+👉 Interview insight:
+
+Don’t store derived data → calculate when needed
+
+🟡 3. Business Logic — INTERVIEW CRITICAL
+🔹 BUY Operation (Deep Logic)
+
+𝑎
+𝑣
+𝑔
+_
+𝑝
+𝑟
+𝑖
+𝑐
+𝑒
+=
+(
+𝑜
+𝑙
+𝑑
+_
+𝑞
+𝑡
+𝑦
+⋅
+𝑜
+𝑙
+𝑑
+_
+𝑝
+𝑟
+𝑖
+𝑐
+𝑒
+)
++
+(
+𝑛
+𝑒
+𝑤
+_
+𝑞
+𝑡
+𝑦
+⋅
+𝑛
+𝑒
+𝑤
+_
+𝑝
+𝑟
+𝑖
+𝑐
+𝑒
+)
+𝑜
+𝑙
+𝑑
+_
+𝑞
+𝑡
+𝑦
++
+𝑛
+𝑒
+𝑤
+_
+𝑞
+𝑡
+𝑦
+avg_price=
+old_qty+new_qty
+(old_qty⋅old_price)+(new_qty⋅new_price)
+	​
+
+
+🧠 Why weighted average?
+
+👉 Because:
+
+User buys same stock multiple times at different prices
+
+👉 Without this:
+
+Profit/loss calculation becomes wrong ❌
+🔹 SELL Operation (Important Insight)
+
+👉 We DO NOT change avg_price
+
+👉 Only:
+
+Reduce quantity
+
+👉 Why?
+
+Cost basis remains same
+🔥 Edge Cases (Interview GOLD)
+❌ Sell > available quantity
+⚠️ Duplicate event (Kafka retry)
+⚠️ Out-of-order events
+⚠️ Partial failures
+🎯 Interview Answer
+❓ “How do you handle duplicate updates?”
+
+✅ Answer:
+
+Use idempotency key (transactionId)
+Maintain processed events table
+🔴 4. DB Saving — PRODUCTION DEPTH
+🔹 1. Transaction Management
+@Transactional
+
+👉 Guarantees:
+
+Atomicity
+Consistency
+🔹 2. Concurrency Problem (VERY IMPORTANT)
+Problem:
+
+Two BUY requests at same time
+
+👉 Result:
+Wrong quantity ❌
+
+🔥 Solution 1: Optimistic Locking
+@Version
+private int version;
+
+👉 If conflict → retry
+
+🔥 Solution 2: Pessimistic Locking
+SELECT ... FOR UPDATE
+
+👉 Locks row
+
+🎯 Interview Answer
+❓ “Optimistic vs Pessimistic locking?”
+Optimistic	Pessimistic
+No lock initially	Locks row
+Better performance	Safer
+Retry on conflict	Blocks threads
+🔹 3. Idempotency (VERY IMPORTANT)
+
+👉 Same request should NOT update twice
+
+Solution:
+Unique transactionId
+Store processed IDs
+🟢 5. API DESIGN — SENIOR LEVEL
+🔥 Endpoint
+POST /api/v1/portfolio/update
+🔹 Request (Production Ready)
+{
+  "transactionId": "txn_123",
+  "userId": 1,
+  "stockSymbol": "TCS",
+  "quantity": 10,
+  "price": 3500,
+  "type": "BUY"
+}
+🔹 Why transactionId?
+
+👉 Enables:
+
+Idempotency
+Retry safety
+🔹 Response
+{
+  "status": "SUCCESS",
+  "timestamp": "2026-04-03T12:00:00Z",
+  "data": {
+    "userId": 1,
+    "stockSymbol": "TCS",
+    "quantity": 20,
+    "avgPrice": 3400
+  }
+}
+🟡 6. Sorting — DEEP UNDERSTANDING
+🧠 Why Sorting in Portfolio?
+Top performing stocks
+Highest investment
+Risk analysis
+🔹 Real Use Case
+
+👉 “Show top 5 stocks by value”
+
+🔹 Java Example
+portfolioList.stream()
+    .sorted((a, b) -> Double.compare(b.getQuantity()*b.getAvgPrice(),
+                                     a.getQuantity()*a.getAvgPrice()))
+    .limit(5)
+    .toList();
+🧠 Sorting Algorithms (Interview)
+❓ What does Java use?
+
+👉 TimSort
+
+👉 Why?
+
+Optimized for real-world data
+Hybrid (Merge + Insertion)
+🎯 Interview Answer
+❓ “When to use sorting vs DB ORDER BY?”
+Sorting in App	ORDER BY in DB
+Small data	Large data
+Already fetched	Efficient
+🔴 7. EVENT-DRIVEN DESIGN (VERY IMPORTANT)
+🧠 Why NOT direct API?
+
+❌ Tight coupling
+❌ Failures propagate
+
+🔥 Use Queue (Kafka)
+Apache Kafka
+Flow:
+Order Service → Kafka → Portfolio Service
+🎯 Interview Answer
+❓ “Why event-driven architecture?”
+
+✅ Decoupling
+✅ Scalability
+✅ Fault tolerance
+
+🧠 8. SYSTEM DESIGN THINKING
+🔥 How to scale Portfolio Service?
+Partition by userId
+Use caching (Redis)
+Async processing
+🔥 How to handle failures?
+Retry
+DLQ (Dead Letter Queue)
+Reconciliation job
+🏆 9. FINAL INTERVIEW ANSWER (PERFECT)
+
+If asked:
+
+❓ “Design Portfolio Service”
+
+👉 Say:
+
+Microservice architecture
+Event-driven (Kafka)
+DB schema (user, stock, qty, avg price)
+Concurrency handling (optimistic locking)
+Idempotency
+API layer with validation
+Sorting for analytics
+🏁 What Makes You SENIOR
+
+You should now be able to explain:
+
+✅ Weighted avg logic
+✅ Event-driven updates
+✅ Concurrency handling
+✅ Idempotency
+✅ DB consistency
+
+🔥 Homework (SERIOUS)
+
+👉 Upgrade your project:
+
+Add:
+
+transactionId
+optimistic locking
+sorting API
+validation
+🚀 Next Step

@@ -1,0 +1,142 @@
+JWT Authentication – GS-Level Understanding
+1. Core Concept
+JWT (JSON Web Token) is a stateless authentication mechanism used widely in modern APIs and microservices.
+Unlike sessions, JWT doesn’t require server-side storage, making it highly scalable—critical for high-frequency financial systems like GS.
+2. Structure of JWT
+
+Header: Algorithm and token type
+
+{"alg": "HS256", "typ": "JWT"}
+
+Payload: Claims about the user/service
+
+{"sub": "user123", "role": "trader", "exp": 1680000000}
+Registered claims: iss, sub, exp, aud
+Custom claims: e.g., role, permissions
+Signature: HMAC or RSA signature to verify integrity
+
+Example Flow:
+
+User logs in → Server generates JWT → Client stores token → API requests include JWT in Authorization: Bearer <token> header → Server validates token
+3. GS-Level Implementation Considerations
+Security
+Use strong secret keys or asymmetric keys (RSA/ECDSA)
+Set short expiry times for sensitive operations, with refresh tokens
+Validate audience (aud) and issuer (iss)
+Scalability
+Stateless: JWT works perfectly in distributed microservices
+No DB lookup per request → low latency
+Audit & Compliance
+Include claims for roles, permissions, and request metadata
+Log authentication events (login success/failure, token refresh, invalid attempts)
+4. Python Example – JWT Auth
+import jwt
+from fastapi import FastAPI, HTTPException, Depends, Request
+from datetime import datetime, timedelta
+import uuid
+import logging
+
+app = FastAPI()
+
+# --- Structured Auth Logging ---
+logger = logging.getLogger("auth_service")
+logger.setLevel(logging.INFO)
+
+SECRET_KEY = "supersecretkey"
+ALGORITHM = "HS256"
+
+# Generate JWT
+def create_jwt(user_id: str, role: str):
+    payload = {
+        "sub": user_id,
+        "role": role,
+        "exp": datetime.utcnow() + timedelta(minutes=30)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    logger.info(f"JWT created for user {user_id}", extra={"request_id": str(uuid.uuid4())})
+    return token
+
+# Validate JWT
+def validate_jwt(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# Protected endpoint
+@app.get("/secure-data")
+async def secure_endpoint(request: Request, token: str):
+    request_id = str(uuid.uuid4())
+    try:
+        payload = validate_jwt(token)
+        logger.info(f"Access granted for user {payload['sub']}", extra={"request_id": request_id})
+        return {"request_id": request_id, "user": payload["sub"], "role": payload["role"]}
+    except HTTPException as e:
+        logger.warning(f"Auth failed: {e.detail}", extra={"request_id": request_id})
+        raise e
+
+Key Points:
+
+Auth logs with request ID for traceability
+Differentiates success vs failure events
+Stateless JWT allows microservices to authenticate independently
+📌 DSA – Array Hard Problems
+Focus Areas
+Sliding window / two pointers
+Prefix sums / difference arrays
+Subarray maximum/minimum
+Combination & permutation problems on arrays
+Examples:
+Maximum subarray sum with at most K elements
+Trapping Rain Water
+Largest rectangle in histogram
+GS-Level Mock Strategy
+Understand the brute-force solution
+Optimize step by step, narrating reasoning
+State complexity: time vs space
+Edge cases: empty arrays, negative numbers, duplicates
+📌 Production: Auth Logs
+Best Practices
+Log Every Auth Event
+Login attempt success/failure
+Token refresh / expiry
+Role-based access events
+Structured Logs
+Include request_id, user_id, role, endpoint, timestamp, ip_address
+Security Compliance
+Do not log passwords
+Mask PII in logs
+Integration
+Centralized logging system (ELK, Splunk)
+Enable alerting for suspicious activity (multiple failed attempts, invalid tokens)
+Python Example – Auth Logging
+logger.info("Login attempt successful", extra={
+    "request_id": str(uuid.uuid4()),
+    "user_id": "user123",
+    "role": "trader",
+    "endpoint": "/login",
+    "ip_address": "192.168.1.1"
+})
+
+logger.warning("Invalid token access attempt", extra={
+    "request_id": str(uuid.uuid4()),
+    "user_id": "user123",
+    "endpoint": "/secure-data",
+    "ip_address": "192.168.1.1"
+})
+
+✅ GS-Level Interview Talking Points
+
+Stateless JWT reduces DB hits → low-latency auth for microservices
+Detailed audit logs for compliance and traceability
+Handling token expiry, refresh tokens, and invalid attempts
+How you’d scale auth in a distributed system while maintaining security
+
+If you want, I can combine Day 50 into a full Python microservice demo that includes:
+
+JWT authentication
+Array-based preprocessing (DSA-hard logic)
+Full structured auth + error logging

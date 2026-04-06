@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual Environment
+venv/
+env/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# MySQL data (docker volume)
+mysql_data/
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+*.pid

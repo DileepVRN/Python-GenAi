@@ -1,0 +1,466 @@
+Great—Day 25 is about building robust, flexible read APIs, applying stack-based reasoning, and enforcing strong validation like a production engineer.
+
+I’ll take you deep into:
+
+Query params → API design + performance
+Stack problems → real system patterns
+Validation → preventing production failures
+GS-level answers + scenarios
+📅 DAY 25 — FLEXIBLE APIs + CONTROL FLOW + DATA SAFETY
+🧠 1) QUERY PARAMS — API FLEXIBILITY LAYER
+🔥 Core Idea
+
+Query params are not just inputs—they define:
+
+How clients query your system efficiently
+🧠 Deep Understanding (GS-Level)
+✔ 1. Query Params vs Path Params
+Type	Use
+Path	specific resource
+Query	filtering/sorting
+Example:
+GET /transactions/123      # path param
+GET /transactions?user_id=U1&limit=10  # query params
+
+💬 GS Answer:
+
+“I use query parameters for filtering, sorting, and pagination to provide flexible data access without changing API structure.”
+
+✔ 2. Filtering Strategy (VERY IMPORTANT)
+
+👉 Always filter early
+
+Example:
+
+user_id, date range, status
+
+💬 GS Answer:
+
+“I design query parameters to align with database indexes to ensure efficient filtering and low latency.”
+
+✔ 3. Pagination (MANDATORY)
+GET /transactions?limit=50&cursor=abc
+
+💬 GS Answer:
+
+“I enforce pagination to prevent large responses and protect system performance.”
+
+✔ 4. Sorting
+?sort=amount_desc
+
+💬 GS Answer:
+
+“I support sorting to enable flexible client queries, while ensuring indexes support sorting fields.”
+
+✔ 5. Validation of Query Params
+
+👉 Prevent invalid queries
+
+⚙️ FastAPI Example
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+@app.get("/transactions")
+async def get_transactions(
+    user_id: str | None = None,
+    limit: int = Query(10, le=100),
+):
+    return {"user_id": user_id, "limit": limit}
+⚙️ Real-Time Usage
+✔ Trading systems
+filter orders
+✔ Banking
+filter transactions
+✔ Analytics
+dashboards
+🎯 SCENARIO QUESTIONS
+❓ Q1: API returns too much data
+
+💬 Strong Answer:
+
+“I would enforce pagination and filtering to reduce response size and improve performance.”
+
+❓ Q2: Slow queries
+
+💬 Strong Answer:
+
+“I would align query parameters with indexed fields and optimize database queries.”
+
+❓ Q3: Invalid query params
+
+💬 Strong Answer:
+
+“I would validate query parameters at the API layer and return clear error responses.”
+
+🧠 GS-Level Answer
+
+👉 “How do you design query parameters?”
+
+“I design query parameters to support filtering, sorting, and pagination while ensuring validation and alignment with database indexes for performance.”
+
+🧠 2) DSA — STACK (CONTROL FLOW MODEL)
+🔥 Core Idea
+
+Stack =
+
+LIFO (Last In First Out)
+🧠 Deep Understanding
+✔ Why stacks matter
+function calls (call stack)
+parsing expressions
+undo/redo
+🔥 Example
+stack = []
+
+stack.append(1)
+stack.append(2)
+stack.pop()  # 2
+🔥 Classic Problems
+✔ Valid Parentheses
+def is_valid(s):
+    stack = []
+    mapping = {")": "(", "}": "{", "]": "["}
+
+    for ch in s:
+        if ch in mapping.values():
+            stack.append(ch)
+        else:
+            if not stack or stack.pop() != mapping[ch]:
+                return False
+
+    return not stack
+⚙️ Real-Time Usage
+✔ Parsing systems
+compilers
+✔ Undo/Redo systems
+✔ Expression evaluation
+🔥 Advanced Concepts
+✔ Monotonic stack
+✔ Next greater element
+🎯 SCENARIO QUESTIONS
+❓ Q1: Expression parsing
+
+💬 Strong Answer:
+
+“I would use a stack to track operators and operands for efficient parsing.”
+
+❓ Q2: Large input
+
+💬 Strong Answer:
+
+“I would ensure stack usage is optimized and avoid unnecessary memory usage.”
+
+❓ Q3: Incorrect results
+
+💬 Strong Answer:
+
+“I would carefully handle push/pop operations and validate edge cases.”
+
+🧠 GS-Level Answer
+
+👉 “Where do you use stack?”
+
+“Stacks are used in parsing, recursion handling, undo/redo systems, and expression evaluation where LIFO behavior is required.”
+
+⚙️ 3) PRODUCTION — VALIDATION (MOST IMPORTANT)
+🔥 Core Idea
+
+Validation is:
+
+First line of defense in production systems
+🧠 Deep Understanding
+✔ Types of validation
+Type	Example
+Schema	data types
+Business	rules
+Security	input sanitization
+✔ Why validation matters
+prevents bad data
+prevents crashes
+improves reliability
+⚙️ Real-Time Usage
+✔ APIs
+validate request
+✔ Data pipelines
+validate input
+✔ DB systems
+enforce constraints
+🔥 Best Practices
+✔ Validate early (API layer)
+✔ Fail fast
+✔ Clear error messages
+✔ Do not trust client
+🎯 SCENARIO QUESTIONS
+❓ Q1: Invalid data breaks system
+
+💬 Strong Answer:
+
+“I would enforce validation at the API boundary and reject invalid inputs early.”
+
+❓ Q2: Missing fields
+
+💬 Strong Answer:
+
+“I would use schema validation to ensure required fields are present.”
+
+❓ Q3: Security issue (injection)
+
+💬 Strong Answer:
+
+“I would sanitize inputs and use parameterized queries to prevent injection attacks.”
+
+🧠 GS-Level Answer
+
+👉 “How do you handle validation?”
+
+“I validate inputs at multiple layers—schema, business logic, and security—to ensure data integrity and system reliability.”
+
+🧠 4) SYSTEM CONNECTION
+Client → GET API → Query Params → Validation → Service → DB → Response
+🏆 FINAL — HOW TO ANSWER LIKE GS ENGINEER
+1. Clarify
+query patterns
+constraints
+2. Design
+query params structure
+3. Optimize
+filtering
+indexing
+4. Reliability
+validation
+error handling
+5. Production Thinking
+scalability
+performance
+security
+🚀 NEXT STEP
+
+You are now designing flexible + safe APIs 🔥
+
+👉 Choose:
+
+1. Day 25 Mock Interview (HARD)
+API design
+validation failures
+stack problems
+2. Build Real Feature
+
+👉 Advanced Query API:
+
+filters
+sorting
+pagination
+validation
+
+Just say:
+
+👉 “Mock interview hard”
+or
+👉 “Build advanced query API”
+
+I’ll push you to GS-level mastery
+
+Excellent—Day 25 is where interviewers check if you can design flexible read APIs safely, reason with stack-based control flow, and enforce robust validation across layers. Below is GS-level depth + real usage + strong answers.
+
+📅 DAY 25 — QUERY DESIGN + STACK THINKING + VALIDATION
+🧠 1) QUERY PARAMS — FLEXIBLE, SAFE READ APIs
+🔥 Core Idea
+
+Query params define how clients access data:
+
+GET /transactions?user_id=U1&status=SUCCESS&from=2026-01-01&to=2026-01-31&limit=50&cursor=abc&sort=ts_desc
+
+👉 You’re designing a query language over HTTP.
+
+🧠 Deep Concepts (GS-Level)
+✔ API as a Query Interface
+Support filtering, sorting, pagination
+Avoid breaking changes (extensible via params)
+
+💬 Top Answer:
+
+“I treat query params as a stable query interface, enabling flexible access patterns without changing endpoints.”
+
+✔ Filtering Strategy (Push Down)
+Apply filters as early as possible (DB layer)
+Align filters with indexes (e.g., user_id, ts)
+
+💬 Top Answer:
+
+“I push filtering to the database and align parameters with indexes to minimize data scanned and reduce latency.”
+
+✔ Pagination (Cursor > Offset at Scale)
+Offset: simple, degrades with large offsets
+Cursor: stable, scalable (use last seen key)
+
+💬 Top Answer:
+
+“For large datasets, I prefer cursor-based pagination to avoid performance issues and ensure stable ordering.”
+
+✔ Sorting & Determinism
+Always define stable sort order (e.g., ts, id)
+Prevent duplicates/missing rows across pages
+
+💬 Top Answer:
+
+“I ensure deterministic sorting with a tie-breaker to keep pagination consistent.”
+
+✔ Validation & Guardrails
+Cap limit (e.g., max 100–200)
+Validate enums (status), ranges (from <= to)
+Reject unsupported combinations
+
+💬 Top Answer:
+
+“I validate query params strictly and enforce limits to protect the system from expensive queries.”
+
+✔ Caching
+GET is cache-friendly
+Use ETag/Cache-Control or Redis for hot queries
+
+💬 Top Answer:
+
+“I leverage caching for read-heavy endpoints to reduce DB load and improve latency.”
+
+⚙️ FastAPI (filters + validation + pagination)
+from fastapi import FastAPI, Query, HTTPException
+from typing import Optional
+
+app = FastAPI()
+
+@app.get("/transactions")
+async def get_tx(
+    user_id: Optional[str] = None,
+    status: Optional[str] = Query(None, pattern="^(SUCCESS|FAILED)$"),
+    limit: int = Query(50, ge=1, le=200),
+    cursor: Optional[str] = None,
+    sort: str = Query("ts_desc", pattern="^(ts_asc|ts_desc)$"),
+):
+    # validate combos
+    if cursor and sort == "ts_asc":
+        raise HTTPException(400, "Cursor incompatible with ascending order")
+
+    # pseudo: push filters to DB, apply cursor
+    return {"data": [], "next_cursor": None}
+🎯 Scenarios (Query Params)
+API returns too much data
+💬 “Enforce pagination, cap limits, add filters.”
+Slow queries
+💬 “Add indexes aligned to filters/sort; push filters to DB; cache hot queries.”
+Inconsistent paging
+💬 “Use cursor pagination with deterministic ordering (include tie-breaker).”
+🧠 GS-Level Summary
+
+“I design query params as a flexible query interface with filtering, sorting, and cursor-based pagination, validate inputs strictly, and align with DB indexes and caching for performance.”
+
+🧠 2) DSA — STACK (CONTROL FLOW & PARSING)
+🔥 Core Idea
+
+Stack models LIFO control flow:
+
+push → push → pop → pop
+
+👉 Mirrors call stack, parsing, and state rollback.
+
+🧠 Deep Concepts
+✔ When to use a stack
+Nested structures (parentheses, JSON/XML)
+Backtracking/undo
+Monotonic constraints (next greater/smaller)
+✔ Classic: Valid Parentheses
+def is_valid(s):
+    st, mp = [], {')':'(', ']':'[', '}':'{'}
+    for ch in s:
+        if ch in mp.values():
+            st.append(ch)
+        else:
+            if not st or st.pop() != mp[ch]:
+                return False
+    return not st
+✔ Monotonic Stack (VERY IMPORTANT)
+Maintain increasing/decreasing stack
+Solve Next Greater Element, Stock Span, Largest Rectangle
+
+💬 Top Answer:
+
+“I use a monotonic stack to process elements once and maintain order constraints, achieving linear time.”
+
+✔ Complexity Thinking
+Each element pushed and popped at most once → O(n)
+⚙️ Real Usage
+Compilers/parsers (syntax checking)
+Expression evaluation
+Undo/redo systems
+Time-series analytics (spans, ranges)
+🎯 Scenarios (Stack)
+Parsing expressions fails on nested input
+💬 “Use a stack to track context and validate structure.”
+Need next greater element fast
+💬 “Use monotonic stack to get O(n) instead of O(n²).”
+Memory concerns
+💬 “Stack is O(n); ensure constraints or stream processing if needed.”
+🧠 GS-Level Summary
+
+“Stacks model LIFO control flow and are ideal for nested parsing and monotonic constraints, enabling linear-time solutions for many sequence problems.”
+
+⚙️ 3) PRODUCTION — VALIDATION (DEFENSE-IN-DEPTH)
+🔥 Core Idea
+
+Validation is your first reliability and security layer:
+
+Reject bad input early → protect system
+🧠 Deep Concepts
+✔ Layers of Validation
+Schema (types, formats) — Pydantic
+Business rules (limits, invariants) — service layer
+Security (sanitization, injection prevention) — DB/ORM, escaping
+
+💬 Top Answer:
+
+“I apply validation at multiple layers—schema at the API boundary, business rules in services, and security at the persistence layer.”
+
+✔ Fail Fast + Clear Errors
+Return 4xx with structured body
+Do not proceed with partial data
+✔ Guardrails
+Cap sizes (limit, payload size)
+Whitelist enums
+Validate ranges (from <= to)
+Rate limiting (429)
+✔ Don’t Trust the Client
+Re-validate even if UI validates
+Use parameterized queries to avoid SQL injection
+⚙️ FastAPI Validation Example
+from pydantic import BaseModel, Field
+
+class TxReq(BaseModel):
+    user_id: str = Field(min_length=1)
+    amount: float = Field(gt=0)
+🎯 Scenarios (Validation)
+Invalid data breaks downstream
+💬 “Validate at API boundary and fail fast with 400.”
+Injection attack risk
+💬 “Use parameterized queries and input sanitization.”
+Expensive queries via params
+💬 “Cap limits, validate ranges, reject unsupported combos.”
+🧠 GS-Level Summary
+
+“I enforce validation at schema, business, and security layers, fail fast with clear errors, and add guardrails to protect performance and integrity.”
+
+🧠 4) SYSTEM CONNECTION (REAL WORLD)
+Client → GET /transactions?...
+        → Validate (params) → Service → DB (indexed query) → Response
+                               ↓
+                           Metrics/Logs
+🏆 HOW TO ANSWER LIKE A GS ENGINEER
+Clarify: access patterns, SLAs, data size
+Design: filters + cursor pagination + deterministic sort
+Optimize: indexes, caching, push-down filters
+Reliability: strict validation, guardrails
+Observability: logs/metrics for slow queries & errors
+🚀 NEXT STEP
+“Mock interview hard (Day 25)” → tricky API + stack scenarios
+“Build advanced query API” → filters, cursor pagination, caching, validation
+
+I’ll push you to GS-level mastery
