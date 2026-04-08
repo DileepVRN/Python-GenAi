@@ -19,7 +19,8 @@ def consume_transactions():
         receiver = db.query(Account).filter(Account.id == data["to_account"]).first()
 
         if sender and receiver:
-            sender.balance -= data["amount"]
-            receiver.balance += data["amount"]
+            with db.begin():
+                sender.balance -= data["amount"]
+                receiver.balance += data["amount"]
 
-            db.commit()
+           
