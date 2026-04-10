@@ -18,7 +18,6 @@ def get_db():
 @router.post("/transfer")
 def transfer(
     data: TransferRequest,
-    db: Session = Depends(get_db),
-    user=Depends(verify_token)
+    db: Session = Depends(get_db)
 ):
     return service.transfer(db, data)

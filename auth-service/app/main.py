@@ -45,3 +45,7 @@ def startup():
 #   - POST /auth/register - Register new user
 #   - POST /auth/login - Authenticate user and get token
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+
+@app.get("/health")
+def health():
+    return {"status": "up"}

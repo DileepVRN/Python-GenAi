@@ -16,7 +16,7 @@ class Settings:
     # Constructs MySQL connection URL from environment or uses default
     # Format: mysql+pymysql://username:password@host:port/database_name
     # pool_pre_ping helps maintain connection health by pinging DB before use
-    DB_URL = os.getenv("DB_URL", "mysql+pymysql://root:root@localhost:3306/account_db")
+    DB_URL = os.getenv("DB_URL", "mysql+pymysql://root:root@mysql:3306/account_db")
 
 # Global settings instance used throughout the application
 settings = Settings()

@@ -1,0 +1,11 @@
+fastapi       # Fast API framework for routing
+uvicorn[standard]  # ASGI server to run FastAPI
+requests      # HTTP client to call other microservices
+python-dotenv      # Load environment variables from .env
+passlib[bcrypt]==1.7.4    # If gateway does auth with password hashing
+bcrypt==3.2.0  
+httpx==0.28.1          # Async HTTP client (better for async FastAPI calls)
+pydantic         # For request/response validation (FastAPI uses this)
+slowapi==0.1.5  # Rate limiting middleware
+pyjwt==2.9.0   
+python-jose

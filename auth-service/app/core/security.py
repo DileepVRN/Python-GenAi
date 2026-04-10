@@ -25,41 +25,28 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ========== PASSWORD HASHING FUNCTIONS ==========
 
-def hash_password(password: str):
+import hashlib
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
     """
-    Hash a plain text password using bcrypt.
-    
-    IMPORTANT FIX for bcrypt limitation:
-    - Bcrypt has 72-byte password limit
-    - Passwords longer than 72 bytes are hashed with SHA256 first
-    - This prevents silent truncation of long passwords
-    
-    Args:
-        password (str): Plain text password to hash
-        
-    Returns:
-        str: Bcrypt hash string (starts with $2b$12$...)
-        
-    Security Notes:
-        - Hash is deterministic given same password (salt generates same hash)
-        - Always use verify_password() to compare against stored hash
-        - Never store plain text passwords
+    Hash a password safely for bcrypt (>72 bytes supported)
     """
-    # Convert password to bytes
+    # Convert to bytes
     password_bytes = password.encode("utf-8")
     
-    # Log hashing operation (remove sensitive data in production)
-    logger.info(f"inside hasing logic{password} ")
-    
-    # Handle long passwords (> 72 bytes)
-    # SHA256 reduces any size password to 64-byte hash
-    # Then bcrypt hashes the SHA256 output
+    # SHA256 if >72 bytes to avoid bcrypt limitation
     if len(password_bytes) > 72:
-        # SHA256 hash as hex string
-        password = hashlib.sha256(password_bytes).hexdigest()
+        # Use digest() -> 32 bytes
+        password_bytes = hashlib.sha256(password_bytes).digest()
     
-    # Hash using bcrypt context (adds salt + multiple rounds)
-    return pwd_context.hash(password)
+    # Passlib bcrypt requires str, so decode bytes safely using latin1
+    safe_password = password_bytes.decode("latin1")
+    
+    # Hash
+    return pwd_context.hash(safe_password)
 
 def verify_password(plain: str, hashed: str):
     """

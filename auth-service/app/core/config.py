@@ -13,7 +13,7 @@ class Settings:
     # Database Configuration
     # Constructs MySQL connection URL from environment or uses default
     # Format: mysql+pymysql://username:password@host:port/database_name
-    DB_URL = os.getenv("DB_URL", "mysql+pymysql://root:root@localhost:3306/auth_db")
+    DB_URL = os.getenv("DB_URL", "mysql+pymysql://root:root@mysql:3306/auth_db")
     
     # JWT (JSON Web Token) Configuration
     # SECRET_KEY: Used to sign and verify JWT tokens

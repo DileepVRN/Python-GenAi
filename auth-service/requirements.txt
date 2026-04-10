@@ -2,6 +2,8 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 pymysql
+passlib[bcrypt]
+bcrypt==3.2.0
+python-jose
 kafka-python
 cryptography
-python-jose

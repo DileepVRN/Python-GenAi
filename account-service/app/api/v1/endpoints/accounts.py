@@ -21,6 +21,7 @@ def get_db():
 # Create account
 @router.post("/")
 def create_account(account: AccountCreate, db: Session = Depends(get_db)):
+    print("inside accounts",account)
     return service.create_account(db, account)
 
 # Get all accounts
