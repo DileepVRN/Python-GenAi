@@ -1,4 +1,5 @@
-Perfect — here is your fully split 60-day plan (day-by-day) with:
+*Perfect — here is your fully split 60-day plan (day-by-day) with:
+*sk-proj-bbVIOOYgjQwHfBUUdh4zxO*0JlfNu9XRTYcFGBBWUh7BaNk1OK7u39T_yoUGfAg5UPzKY1D7_onaT3BlbkFJYXR-
 
 🐍 Python topics
 🧠 Daily DSA
@@ -262,7 +263,7 @@ Production: explanation
 🚀 AI Trading System
 Kafka → Strategy → Risk → Order → ML → LLM → API
 💥 FINAL RESULT
-
+ahc9RyQaARLieDHflroHQ0RxPLan09aY69ZwdnCBl3t1ClTkqA80V12q3H3Gx2WevYdsAA
 👉 You will:
 
 Solve DSA problems confidently
